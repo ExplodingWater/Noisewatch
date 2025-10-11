@@ -1,24 +1,38 @@
 body {
+    height: 100%;
+    margin: 0;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
     scroll-behavior: smooth;
 }
 
 nav {
-  padding: 10px 20px;
   display: flex;
+  background-color: rgb(55, 128, 55);
   justify-content: flex-end; 
-  gap: 20px; 
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 0.1vh 5vh rgba(0, 0, 0, 0.658);
 }
 
 nav a {
-  color: rgba(0, 0, 0, 0.603);          
+  color: white;  
   text-decoration: none; 
+  height: 5vh;
+  width: 10vh;
+  border-radius: 6vh;
+  background-color: rgb(55, 128, 55);
   display: flex;
-  flex-direction: row;
-  margin-right: 2vh;
-  margin-top: 3vh;
+  justify-content: center;
+  align-items: center;       
+  margin-right: 5vh;
+  margin-top: 4vh;
   margin-bottom: 5vh;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 nav a:visited {
@@ -26,27 +40,45 @@ nav a:visited {
 }
 
 nav a:hover {
-  color: rgba(0, 0, 0, 0.603);  
+  background-color: white;
+  border:rgb(55, 128, 55);
+  color: rgb(55, 128, 55);  
 }
 
 nav a:active {
   color: rgba(0, 0, 0, 0.603);         
 }
 
+.report{
+  margin-right: 7vh;
+}
+
+#home{
+  margin-top: 30vh;
+}
+
 section {
     text-align: center;
     margin-top: 10vh;
+    color: rgba(0, 0, 0, 0.651);
+}
+
+h3{
+  color: rgba(0, 0, 0, 0.295);
 }
 
 p {
     text-align: center;
     margin-top: 5vh;
-    color: rgba(0, 0, 0, 0.603);
+    color: rgba(0, 0, 0, 0.5);
     font-size: 2vh;
 }
 
 #footer{
   margin-top: 15vh;
+  padding-top: 5vh;
+  background-color: rgb(55, 128, 55);
+  width: 100%;
 }
 
 .images{
@@ -56,19 +88,26 @@ p {
 }
 
 .albict{
-  margin-top: 2vh;
+  margin-top: 1vh;
   margin-right: 5vh;
   height: 15vh;
   width: 25vh;
 }
 
 .bashkia{
-  width: 17vh;
+  height: 13vh;
+  width: 35vh;
 }
 
 .climate{
-  margin-top: 3.8vh;
+  margin-top: 3vh;
+  margin-bottom: 10vh;
   margin-left: 3vh;
   height: 10vh;
   width: 25vh;
+}
+
+.footer-title{
+  color: rgba(255, 255, 255, 0.897);
+  margin-bottom: 10vh;
 }
