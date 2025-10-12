@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Report Noise - Noisewatch Tirana</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> 
+        <a href="/map">Map</a>
+        <a href="/about">About Us</a> 
+        <a href="/services">Our Mission</a> 
+        <a class="report" href="/report">Report</a>
+    </nav>
+
+    <main class="report-container">
+        <div class="report-form">
+            <h1>Report noise commotion</h1>
+            <p class="subtitle">Report a noise commotion near you.</p>
+
+            <form id="noiseReportForm">
+                <!-- Location Section -->
+                <div class="form-section location-section">
+                    <div class="location-header">
+                        <h2>📍 Location</h2>
+                        <button type="button" id="getLocationBtn" class="location-btn">
+                            📍 Use Current Location
+                        </button>
+                    </div>
+                    <p class="location-status" id="locationStatus">Click to get your current location</p>
+                    <div class="coordinates" id="coordinates" style="display: none;">
+                        <p>Latitude: <span id="latitude"></span></p>
+                        <p>Longitude: <span id="longitude"></span></p>
+                    </div>
+                </div>
+
+                <!-- Description Section -->
+                <div class="form-section">
+                    <h2>Description</h2>
+                    <textarea 
+                        id="description" 
+                        placeholder="Briefly describe the noise (e.g., 'Loud construction work', 'Traffic noise', 'Music from nearby bar')"
+                        required
+                        maxlength="255"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/255 characters
+                    </div>
+                </div>
+
+                <!-- Audio Recording Section -->
+                <div class="form-section">
+                    <h2>Audio Recording for dB Measurement</h2>
+                    <div class="recording-controls">
+                        <button type="button" id="startRecordingBtn" class="record-btn">
+                            Record
+                        </button>
+                        <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
+                            Stop
+                        </button>
+                    </div>
+                    
+                    <div class="recording-status" id="recordingStatus">
+                        Click "Start Recording" to begin 5-second audio capture
+                    </div>
+                    
+                    <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
+                        <canvas id="visualizerCanvas" width="300" height="100"></canvas>
+                    </div>
+                    
+                    <div class="db-display" id="dbDisplay" style="display: none;">
+                        <div class="db-value">
+                            <span id="dbValue">--</span> dB
+                        </div>
+                        <div class="db-level" id="dbLevel"></div>
+                    </div>
+                </div>
+
+                <!-- Submit Section -->
+                <div class="form-section">
+                    <button type="submit" id="submitBtn" class="submit-btn" disabled>
+                        Submit Report
+                    </button>
+                    <p class="privacy-note">
+                        Your report will be submitted anonymously. No personal information is collected.
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="report-logic.js"></script>
+</body>
+</html>

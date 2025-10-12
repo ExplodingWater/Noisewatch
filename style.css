@@ -1,0 +1,420 @@
+body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    scroll-behavior: smooth;
+}
+
+nav {
+  display: flex;
+  background-color: rgb(55, 128, 55);
+  justify-content: flex-end; 
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 0.1vh 5vh rgba(0, 0, 0, 0.658);
+}
+
+nav a {
+  color: white;  
+  text-decoration: none; 
+  height: 5vh;
+  width: 10vh;
+  border-radius: 6vh;
+  background-color: rgb(55, 128, 55);
+  display: flex;
+  justify-content: center;
+  align-items: center;       
+  margin-right: 5vh;
+  margin-top: 4vh;
+  margin-bottom: 5vh;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+nav a:visited {
+  color: rgba(0, 0, 0, 0.603);    
+}
+
+nav a:hover {
+  background-color: white;
+  border:rgb(55, 128, 55);
+  color: rgb(55, 128, 55);  
+}
+
+nav a:active {
+  color: rgba(0, 0, 0, 0.603);         
+}
+
+.report{
+  margin-right: 7vh;
+}
+
+#home{
+  margin-top: 30vh;
+}
+
+section {
+    text-align: center;
+    margin-top: 10vh;
+    color: rgba(0, 0, 0, 0.651);
+}
+
+h3{
+  color: rgba(0, 0, 0, 0.295);
+}
+
+p {
+    text-align: center;
+    margin-top: 5vh;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 2vh;
+}
+
+#footer{
+  margin-top: 15vh;
+  padding-top: 5vh;
+  background-color: rgb(55, 128, 55);
+  width: 100%;
+}
+
+.images{
+  display: flex;
+  justify-content: center; 
+  gap: 20px; 
+}
+
+.albict{
+  margin-top: 1vh;
+  margin-right: 5vh;
+  height: 15vh;
+  width: 25vh;
+}
+
+.bashkia{
+  height: 13vh;
+  width: 35vh;
+}
+
+.climate{
+  margin-top: 3vh;
+  margin-bottom: 10vh;
+  margin-left: 3vh;
+  height: 10vh;
+  width: 25vh;
+}
+
+.footer-title{
+  color: rgba(255, 255, 255, 0.897);
+  margin-bottom: 10vh;
+}
+
+/* --- NEW STYLES FOR MAP PAGE --- */
+
+/* This makes the map container take up the full screen */
+.map-container {
+    position: relative; /* Needed for positioning the button */
+    width: 100vw;
+    height: calc(100vh - 65px); /* Full height minus the navbar height */
+}
+
+/* This is the div where the map will be loaded */
+#googleMap {
+    width: 100%;
+    height: 100%;
+}
+
+/* Style for the red, rectangular report button */
+.report-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10; /* Ensures the button is on top of the map */
+    background-color: #FF0000; /* As requested */
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    border-radius: 4px; /* For slightly rounded corners on the rectangle */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+}
+
+.report-button:hover {
+    background-color: #D60000; /* A slightly darker red on hover */
+}
+
+/* --- REPORT PAGE STYLES --- */
+
+.report-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    margin-top: 15vh;
+}
+
+.report-form {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.report-form h1 {
+    color: rgb(55, 128, 55);
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 2.5em;
+}
+
+.subtitle {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.form-section h2 {
+    color: rgb(55, 128, 55);
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+/* Location Picker Styles */
+.location-picker {
+    text-align: center;
+}
+
+.location-section {
+    padding: 15px 20px;
+}
+
+.location-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.location-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.location-btn {
+    background: rgb(55, 128, 55);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.location-btn:hover {
+    background: rgb(45, 118, 45);
+}
+
+.location-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.location-status {
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.coordinates {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+/* Description Styles */
+textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: rgb(55, 128, 55);
+    box-shadow: 0 0 5px rgba(55, 128, 55, 0.3);
+}
+
+.char-count {
+    text-align: right;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.5);
+    margin-top: 5px;
+}
+
+/* Recording Controls */
+.recording-controls {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.record-btn {
+    background: #FF4444;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: all 0.3s;
+}
+
+.record-btn:hover:not(:disabled) {
+    background: #CC3333;
+    transform: translateY(-2px);
+}
+
+.record-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.record-btn.stop {
+    background: #666;
+}
+
+.record-btn.stop:hover:not(:disabled) {
+    background: #555;
+}
+
+.recording-status {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 14px;
+    margin-bottom: 15px;
+    min-height: 20px;
+}
+
+/* Audio Visualizer */
+.audio-visualizer {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#visualizerCanvas {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #000;
+}
+
+/* dB Display */
+.db-display {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.db-value {
+    font-size: 3em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.db-level {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Submit Button */
+.submit-btn {
+    background: rgb(55, 128, 55);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: rgb(45, 118, 45);
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.privacy-note {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .report-container {
+        padding: 10px;
+        margin-top: 10vh;
+    }
+    
+    .report-form {
+        padding: 20px;
+    }
+    
+    .report-form h1 {
+        font-size: 2em;
+    }
+    
+    .record-btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    .recording-controls {
+        margin-bottom: 15px;
+    }
+    
+    .location-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .location-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

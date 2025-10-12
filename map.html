@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Map - Noisewatch Tirana</title>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> 
+        <a href="/map">Map</a>
+        <a href="/about">About Us</a> 
+        <a href="/services">Our Mission</a> 
+        <a class="report" href="/report">Report</a>
+    </nav>
+
+    <main class="map-container">
+        <!-- The Google Map will be rendered inside this div -->
+        <div id="googleMap"></div>
+
+        <!-- The Report button is positioned over the map -->
+        <button class="report-button" onclick="window.location.href='/report'">Report Commotion</button>
+    </main>
+
+    <!-- This is where we load the map logic and the Google Maps API -->
+    <script src="maplogic.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBL-1ScqRSE8y09moL0NHF49JkpK_Grhf4&libraries=visualization&callback=initMap"></script>
+</body>
+</html>

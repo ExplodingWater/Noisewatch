@@ -2,6 +2,7 @@
 const express = require('express');
 const { Pool } = require('pg'); // PostgreSQL client
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config(); // To load environment variables from .env file
 
 // --- 1. INITIAL SETUP ---
@@ -11,6 +12,7 @@ const port = 3000;
 // Middleware
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Enable the express server to parse JSON formatted request bodies
+app.use(express.static('.')); // Serve static files from the root directory
 
 // --- 2. DATABASE CONNECTION ---
 // Create a new Pool instance to connect to your PostgreSQL database.
@@ -24,7 +26,36 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// --- 3. API ENDPOINTS (ROUTES) ---
+// --- 3. ROUTES ---
+
+// Serve the main page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Serve the map page
+app.get('/map', (req, res) => {
+  res.sendFile(path.join(__dirname, 'map.html'));
+});
+
+// Serve other pages (they all use the same index.html with different sections)
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/services', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/report', (req, res) => {
+  res.sendFile(path.join(__dirname, 'report.html'));
+});
+
+app.get('/report/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'report.html'));
+});
+
+// --- 4. API ENDPOINTS (ROUTES) ---
 
 /**
  * @route   POST /api/reports
@@ -84,7 +115,7 @@ app.get('/api/reports', async (req, res) => {
 });
 
 
-// --- 4. START THE SERVER ---
+// --- 5. START THE SERVER ---
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
