@@ -112,44 +112,37 @@ p {
   margin-bottom: 10vh;
 }
 
-/* --- NEW STYLES FOR MAP PAGE --- */
-
-/* This makes the map container take up the full screen */
 .map-container {
-    position: relative; /* Needed for positioning the button */
+    position: relative;
     width: 100vw;
-    height: calc(100vh - 65px); /* Full height minus the navbar height */
+    height: calc(100vh - 65px);
 }
 
-/* This is the div where the map will be loaded */
 #googleMap {
     width: 100%;
     height: 100%;
 }
 
-/* Style for the red, rectangular report button */
 .report-button {
     position: absolute;
     top: 20px;
     right: 20px;
-    z-index: 10; /* Ensures the button is on top of the map */
-    background-color: #FF0000; /* As requested */
+    z-index: 10;
+    background-color: #FF0000;
     color: white;
     font-weight: bold;
     font-size: 16px;
     border: none;
     padding: 12px 24px;
     cursor: pointer;
-    border-radius: 4px; /* For slightly rounded corners on the rectangle */
+    border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     transition: background-color 0.3s ease;
 }
 
 .report-button:hover {
-    background-color: #D60000; /* A slightly darker red on hover */
+    background-color: #D60000;
 }
-
-/* --- REPORT PAGE STYLES --- */
 
 .report-container {
     max-width: 800px;
@@ -193,7 +186,6 @@ p {
     font-size: 1.3em;
 }
 
-/* Location Picker Styles */
 .location-picker {
     text-align: center;
 }
@@ -250,7 +242,6 @@ p {
     font-size: 14px;
 }
 
-/* Description Styles */
 textarea {
     width: 100%;
     min-height: 100px;
@@ -276,7 +267,6 @@ textarea:focus {
     margin-top: 5px;
 }
 
-/* Recording Controls */
 .recording-controls {
     text-align: center;
     margin-bottom: 20px;
@@ -321,7 +311,6 @@ textarea:focus {
     min-height: 20px;
 }
 
-/* Audio Visualizer */
 .audio-visualizer {
     text-align: center;
     margin: 20px 0;
@@ -333,7 +322,6 @@ textarea:focus {
     background: #000;
 }
 
-/* dB Display */
 .db-display {
     text-align: center;
     margin-top: 20px;
@@ -351,7 +339,6 @@ textarea:focus {
     text-transform: uppercase;
 }
 
-/* Submit Button */
 .submit-btn {
     background: rgb(55, 128, 55);
     color: white;
@@ -382,7 +369,6 @@ textarea:focus {
     margin-top: 10px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .report-container {
         padding: 10px;

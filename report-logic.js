@@ -1,4 +1,3 @@
-// Report Logic for Noise Reporting
 class NoiseReporter {
     constructor() {
         this.mediaRecorder = null;
@@ -8,7 +7,7 @@ class NoiseReporter {
         this.isRecording = false;
         this.recordedChunks = [];
         this.currentLocation = null;
-        this.recordingDuration = 5000; // 5 seconds
+        this.recordingDuration = 5000;
         
         this.initializeElements();
         this.setupEventListeners();
@@ -42,7 +41,6 @@ class NoiseReporter {
         this.form.addEventListener('submit', (e) => this.submitReport(e));
     }
 
-    // Location Functions
     async getCurrentLocation() {
         this.locationStatus.textContent = 'Getting your location...';
         this.getLocationBtn.disabled = true;
@@ -83,7 +81,6 @@ class NoiseReporter {
         }
     }
 
-    // Audio Recording Functions
     async startRecording() {
         try {
             // Request microphone access
@@ -264,7 +261,6 @@ class NoiseReporter {
         this.dbValue.style.color = color;
     }
 
-    // Form Functions
     updateCharCount() {
         const count = this.description.value.length;
         this.charCount.textContent = count;
@@ -279,7 +275,6 @@ class NoiseReporter {
         this.submitBtn.disabled = !(hasLocation && hasDescription && hasRecording);
     }
 
-    // Submission Functions
     async submitReport(event) {
         event.preventDefault();
 
@@ -348,7 +343,6 @@ class NoiseReporter {
     }
 }
 
-// Initialize the reporter when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new NoiseReporter();
 });
