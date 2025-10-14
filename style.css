@@ -49,8 +49,35 @@ nav a:active {
   color: rgba(0, 0, 0, 0.603);         
 }
 
-.report{
-  margin-right: 7vh;
+.al {
+    text-decoration: none;
+    margin-left: 2vh;
+    height: 4vh;
+    width: 4vh;
+    border-radius: 2vh;
+    background-image: url('Flag_of_Albania.svg.png');
+    background-size: cover;
+    background-position: center
+}
+
+.al:visited {
+  color: white;         
+}
+
+.en {
+    text-decoration: none;
+    margin-left: -1vh;
+    margin-right: 6vh;
+    height: 4vh;
+    width: 4vh;
+    border-radius: 2vh;
+    background-image: url('uk.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.en:visited {
+  color: white;         
 }
 
 #home{
@@ -64,7 +91,8 @@ section {
 }
 
 h3{
-  color: rgba(0, 0, 0, 0.295);
+    font-size: 1.5vh;
+    color: rgba(0, 0, 0, 0.144);
 }
 
 p {
@@ -72,6 +100,7 @@ p {
     margin-top: 5vh;
     color: rgba(0, 0, 0, 0.5);
     font-size: 2vh;
+    line-height: 4.8vh;
 }
 
 #footer{
