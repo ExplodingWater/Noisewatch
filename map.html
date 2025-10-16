@@ -8,16 +8,20 @@
 </head>
 <body>
     <nav>
-        <a href="/">Home</a> 
-        <a href="/map">Map</a>
-        <a href="/about">About Us</a> 
-        <a href="/services">Our Mission</a> 
-        <a class="report" href="/report">Report</a>
+        <a href="index.html">Kreu</a>
+        <a href="about.html">Rreth Nesh</a>
+        <a href="services.html">Shërbimet</a>
+        <a href="map.html">Harta</a>
+        <a href="report.html">Raporto</a>
+        <a class="al" href="index.html" title="Shqip"></a>
+        <a class="en" href="en.html" title="English"></a>
     </nav>
 
     <main class="map-container">
         <div id="googleMap"></div>
-        <button class="report-button" onclick="window.location.href='/report'">Report Commotion</button>
+        <div id="map-controls">
+            <button class="report-button" onclick="window.location.href='/report'">Report Commotion</button>
+        </div>
     </main>
 
     <script src="maplogic.js"></script>

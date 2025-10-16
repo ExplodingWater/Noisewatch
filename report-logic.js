@@ -317,6 +317,16 @@ class NoiseReporter {
                 alert('✅ Report submitted successfully! Thank you for helping map noise pollution in Tirana.');
                 this.form.reset();
                 this.resetForm();
+                // Attempt to tell the map page to refresh
+                try {
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.location.reload();
+                    } else if (window.parent && window.parent !== window) {
+                        window.parent.location.reload();
+                    }
+                } catch (e) {
+                    // fallback: nothing
+                }
             } else {
                 throw new Error('Failed to submit report');
             }
