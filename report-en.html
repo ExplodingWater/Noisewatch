@@ -1,66 +1,68 @@
 <!DOCTYPE html>
-<html lang="sq">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Raporto Zhurmën - Noisewatch Tirana</title>
+    <title>Report Noise - Noisewatch Tirana</title>
 </head>
 <body>
     <nav>
-        <a href="/">Kreu</a> 
-        <a href="/map.html">Harta</a>
-        <a href="/about">Rreth Nesh</a> 
-        <a href="/services">Misioni Ynë</a> 
-        <a class="report" href="/report.html">Raporto</a>
+        <a href="/">Home</a> 
+        <a href="/map-en.html">Map</a>
+        <a href="/about">About Us</a> 
+        <a href="/services">Our Mission</a> 
+        <a class="report" href="/report-en.html">Report</a>
         <a class="al" href="/report.html">AL</a>
         <a class="en" href="/report-en.html">EN</a>
     </nav>
 
     <main class="report-container">
         <div class="report-form">
-            <h1>Raporto një zhurmë</h1>
-            <p class="subtitle">Raporto një ngjarje zhurme pranë teje.</p>
+            <h1>Report noise commotion</h1>
+            <p class="subtitle">Report a noise commotion near you.</p>
 
             <form id="noiseReportForm">
                 <div class="form-section location-section">
                     <div class="location-header">
-                        <h2>📍 Vendndodhja</h2>
+                        <h2>📍 Location</h2>
                         <button type="button" id="getLocationBtn" class="location-btn">
-                            📍 Përdor Vendndodhjen Aktuale
+                            📍 Use Current Location
                         </button>
                     </div>
-                    <p class="location-status" id="locationStatus">Kliko për të marrë vendndodhjen tënde aktuale</p>
+                    <p class="location-status" id="locationStatus">Click to get your current location</p>
                     <p class="permission-hint" id="locationPermissionHint" style="display:none;">
-                        Leja e vendndodhjes është bllokuar. Ju lutemi aktivizojeni në cilësimet e shfletuesit dhe provoni përsëri.
+                        Location permission is blocked. Please enable it in your browser settings and try again.
                     </p>
-                    <div class="coordinates" id="accuracy" style="display:none;">
-                        <p>Saktësia: <span id="accuracyMeters">--</span> metra</p>
-                        <p style="font-size:12px;color:rgba(0,0,0,0.6)">Kujdes: Dërgimi i raporteve nga një laptop ose kompjuter desktop mund të jetë shumë i pasaktë.</p>
-                    </div>
                     <div class="coordinates" id="coordinates" style="display: none;">
                         <p>Latitude: <span id="latitude"></span></p>
-                        <p>Longtitude: <span id="longitude"></span></p>
+                        <p>Longitude: <span id="longitude"></span></p>
                     </div>
+                    <div class="coordinates" id="accuracy" style="display:none;">
+                        <p>Accuracy: <span id="accuracyMeters">--</span> meters</p>
+                        <p style="font-size:12px;color:rgba(0,0,0,0.6)">Tip: For best accuracy, enable GPS, go outside with a clear sky view, and wait a few seconds.</p>
+                    </div>
+                    <p style="font-size:12px;color:rgba(0,0,0,0.6)">Warning: Submitting reports from a laptop or desktop computer is likely to be very inaccurate.</p>
                 </div>
+
                 <div class="form-section">
-                    <h2>Përshkrimi</h2>
+                    <h2>Description</h2>
                     <textarea 
                         id="description" 
-                        placeholder="Përshkruani shkurt zhurmën (p.sh., 'Punime të zhurmshme', 'Zhurmë trafiku', 'Muzikë nga një bar pranë')"
+                        placeholder="Briefly describe the noise (e.g., 'Loud construction work', 'Traffic noise', 'Music from nearby bar')"
                         required
                         maxlength="255"
                     ></textarea>
                     <div class="char-count">
-                        <span id="charCount">0</span>/255 karaktere
+                        <span id="charCount">0</span>/255 characters
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h2>Regjistrim Audio për Matjen e dB (decibels)</h2>
+                    <h2>Audio Recording for dB Measurement</h2>
                     <div class="recording-controls">
                         <button type="button" id="startRecordingBtn" class="record-btn">
-                            Regjistro
+                            Record
                         </button>
                         <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
                             Stop
@@ -68,10 +70,10 @@
                     </div>
                     
                     <div class="recording-status" id="recordingStatus">
-                        Kliko "Regjistro" për të nisur regjistrimin e audios 5-sekondëshe
+                        Click "Start Recording" to begin 5-second audio capture
                     </div>
                     <p class="permission-hint" id="microphonePermissionHint" style="display:none; text-align:center;">
-                        Leja per perdorimin e  mikrofonit është bllokuar. Ju lutemi aktivizojeni në cilësimet e browserit tuaj dhe provojeni përsëri.
+                        Microphone permission is blocked. Please enable it in your browser settings and try again.
                     </p>
                     
                     <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
@@ -88,10 +90,10 @@
 
                 <div class="form-section">
                     <button type="submit" id="submitBtn" class="submit-btn" disabled>
-                        Dërgo Raportin
+                        Submit Report
                     </button>
                     <p class="privacy-note">
-                        Raporti juaj do të dërgohet në mënyrë anonime. Dhenat e juaja personale nuk do të mblidhen.
+                        Your report will be submitted anonymously. No personal information is collected.
                     </p>
                 </div>
             </form>
@@ -101,3 +103,4 @@
     <script src="report-logic.js"></script>
 </body>
 </html>
+
