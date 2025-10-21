@@ -4,6 +4,7 @@ class NoiseReporter {
         this.audioContext = null;
         this.analyser = null;
         this.microphone = null;
+        this.preGrantedMicStream = null;
         this.isRecording = false;
         this.recordedChunks = [];
         this.currentLocation = null;
@@ -18,13 +19,17 @@ class NoiseReporter {
         this.getLocationBtn = document.getElementById('getLocationBtn');
         this.locationStatus = document.getElementById('locationStatus');
         this.coordinates = document.getElementById('coordinates');
+        this.accuracyBox = document.getElementById('accuracy');
         this.latitude = document.getElementById('latitude');
         this.longitude = document.getElementById('longitude');
+        this.accuracyMeters = document.getElementById('accuracyMeters');
         this.description = document.getElementById('description');
         this.charCount = document.getElementById('charCount');
         this.startRecordingBtn = document.getElementById('startRecordingBtn');
         this.stopRecordingBtn = document.getElementById('stopRecordingBtn');
         this.recordingStatus = document.getElementById('recordingStatus');
+        this.locationPermissionHint = document.getElementById('locationPermissionHint');
+        this.microphonePermissionHint = document.getElementById('microphonePermissionHint');
         this.audioVisualizer = document.getElementById('audioVisualizer');
         this.visualizerCanvas = document.getElementById('visualizerCanvas');
         this.dbDisplay = document.getElementById('dbDisplay');
@@ -34,11 +39,33 @@ class NoiseReporter {
     }
 
     setupEventListeners() {
-        this.getLocationBtn.addEventListener('click', () => this.getCurrentLocation());
+        this.getLocationBtn.addEventListener('click', () => this.requestIOSLocationPermissionThenGet());
         this.description.addEventListener('input', () => this.updateCharCount());
-        this.startRecordingBtn.addEventListener('click', () => this.startRecording());
+        this.startRecordingBtn.addEventListener('click', () => this.requestIOSMicrophonePermissionThenRecord());
         this.stopRecordingBtn.addEventListener('click', () => this.stopRecording());
         this.form.addEventListener('submit', (e) => this.submitReport(e));
+    }
+
+    // iOS-specific helpers: trigger permission prompts directly from user gesture handlers
+    async requestIOSLocationPermissionThenGet() {
+        // iOS requires direct user gesture for geolocation prompts
+        await this.getCurrentLocation();
+    }
+
+    async requestIOSMicrophonePermissionThenRecord() {
+        try {
+            // If we already obtained a mic stream (e.g., from a prior prompt), reuse it
+            if (!this.preGrantedMicStream) {
+                this.preGrantedMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+            await this.startRecording(this.preGrantedMicStream);
+        } catch (e) {
+            console.error('Microphone permission error:', e);
+            this.recordingStatus.textContent = 'Microphone permission denied. Please enable it and try again.';
+            if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) {
+                this.microphonePermissionHint.style.display = 'block';
+            }
+        }
     }
 
     async getCurrentLocation() {
@@ -55,7 +82,7 @@ class NoiseReporter {
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 20000,
                     maximumAge: 0
                 });
             });
@@ -67,24 +94,31 @@ class NoiseReporter {
 
             this.latitude.textContent = this.currentLocation.latitude.toFixed(6);
             this.longitude.textContent = this.currentLocation.longitude.toFixed(6);
+            if (typeof position.coords.accuracy === 'number') {
+                this.accuracyMeters.textContent = Math.round(position.coords.accuracy);
+                this.accuracyBox.style.display = 'block';
+            }
             
             this.coordinates.style.display = 'block';
-            this.locationStatus.textContent = '✅ Location captured!';
-            this.getLocationBtn.textContent = '📍 Update location';
+            this.locationStatus.textContent = 'Location captured!';
+            this.getLocationBtn.textContent = 'Update location';
             this.getLocationBtn.disabled = false;
             this.checkFormValidity();
 
         } catch (error) {
             console.error('Error getting location:', error);
-            this.locationStatus.textContent = '❌ Could not get your location. Please try again.';
+            this.locationStatus.textContent = 'Could not get your location. Please try again.';
+            if (error && (error.code === error.PERMISSION_DENIED)) {
+                this.locationPermissionHint.style.display = 'block';
+            }
             this.getLocationBtn.disabled = false;
         }
     }
 
-    async startRecording() {
+    async startRecording(preExistingStream) {
         try {
             // Request microphone access
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+            const stream = preExistingStream || await navigator.mediaDevices.getUserMedia({ 
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
@@ -123,6 +157,7 @@ class NoiseReporter {
             this.stopRecordingBtn.disabled = false;
             this.recordingStatus.textContent = '🔴 Recording... point your device to the source of the noise';
             this.audioVisualizer.style.display = 'block';
+            this.microphonePermissionHint.style.display = 'none';
 
             // Start visualizer
             this.startVisualizer();
@@ -136,7 +171,10 @@ class NoiseReporter {
 
         } catch (error) {
             console.error('Error starting recording:', error);
-            this.recordingStatus.textContent = '❌ Could not access microphone. Please check permissions.';
+            this.recordingStatus.textContent = 'Could not access microphone. Please check permissions.';
+            if (error && (error.name === 'NotAllowedError' || error.name === 'SecurityError')) {
+                this.microphonePermissionHint.style.display = 'block';
+            }
         }
     }
 
@@ -333,7 +371,7 @@ class NoiseReporter {
 
         } catch (error) {
             console.error('Error submitting report:', error);
-            alert('❌ Failed to submit report. Please try again.');
+            alert('Failed to submit report. Please try again.');
         } finally {
             this.submitBtn.disabled = false;
             this.submitBtn.textContent = 'Submit';

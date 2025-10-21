@@ -1,0 +1,53 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Static files
+app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+// Routes
+app.use('/api', require('./routes/api'));
+app.use('/', require('./routes/pages'));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'views/index.html'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({ 
+    error: 'Something went wrong!',
+    ...(process.env.NODE_ENV === 'development' && { details: err.message })
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Noisewatch server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Access the app at: http://localhost:${PORT}`);
+});
+
+module.exports = app;

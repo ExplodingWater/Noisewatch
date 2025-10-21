@@ -3,29 +3,33 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
+    color: #000000;
     scroll-behavior: smooth;
 }
 
 nav {
   display: flex;
-  background-color: rgb(55, 128, 55);
+  background: #090979;
+  background: linear-gradient(90deg, rgba(9, 9, 121, 1) 0%, rgba(2, 2, 51, 1) 35%, rgba(0, 89, 107, 1) 100%);
   justify-content: flex-end; 
   align-items: center;
-  position: relative;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   box-shadow: 0 0.1vh 5vh rgba(0, 0, 0, 0.658);
-  z-index: 100;
+  z-index: 1000;
 }
 
 nav a {
   color: white;  
   text-decoration: none; 
+  padding-left: 1vh;
+  padding-right: 1vh;
   height: 5vh;
   width: 10vh;
   border-radius: 6vh;
-  background-color: rgb(55, 128, 55);
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;       
@@ -37,17 +41,32 @@ nav a {
 }
 
 nav a:visited {
-  color: rgba(0, 0, 0, 0.603);    
+  border-color: white; 
 }
 
 nav a:hover {
-  background-color: white;
-  border:rgb(55, 128, 55);
-  color: rgb(55, 128, 55);  
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 25px rgba(255, 255, 255, 0.25),
+              inset 0 1px 3px rgba(255, 255, 255, 0.3);
 }
 
 nav a:active {
-  color: rgba(0, 0, 0, 0.603);         
+  border-color: white;
+}
+
+.logo{
+    position: absolute;
+    left: 10vh;
+    top: 3vh;
+    transform: translateY(-50%);
+    height: 15vh;
+    width: 20vh;
+    border-radius: 2vh;
+    background-image: url('/images/logonoisewatch.png');
+    background-size: cover;
+    background-position: center;
+    text-decoration: none;
+    z-index: 999;
 }
 
 .al {
@@ -56,13 +75,13 @@ nav a:active {
     height: 4vh;
     width: 4vh;
     border-radius: 2vh;
-    background-image: url('Flag_of_Albania.svg.png');
+    background-image: url('/images/Flag_of_Albania.svg.png');
     background-size: cover;
     background-position: center
 }
 
 .al:visited {
-  color: white;         
+    color: white;         
 }
 
 .en {
@@ -72,7 +91,7 @@ nav a:active {
     height: 4vh;
     width: 4vh;
     border-radius: 2vh;
-    background-image: url('uk.png');
+    background-image: url('/images/uk.png');
     background-size: cover;
     background-position: center;
 }
@@ -99,7 +118,7 @@ h3{
 p {
     text-align: center;
     margin-top: 5vh;
-    color: rgba(0, 0, 0, 0.5);
+    color: #000000;
     font-size: 2vh;
     line-height: 4.8vh;
 }
@@ -107,7 +126,8 @@ p {
 #footer{
   margin-top: 15vh;
   padding-top: 5vh;
-  background-color: rgb(55, 128, 55);
+  background: #090979;
+  background: linear-gradient(90deg, rgba(9, 9, 121, 1) 0%, rgba(2, 2, 51, 1) 35%, rgba(0, 89, 107, 1) 100%);
   width: 100%;
 }
 
@@ -146,6 +166,7 @@ p {
     position: relative;
     width: 100vw;
     height: calc(100vh - 65px);
+    margin-top: 65px;
 }
 
 #googleMap {
@@ -155,11 +176,11 @@ p {
 
 .report-button {
     position: absolute;
-    top: 20px;
+    top: 80px;
     right: 20px;
     z-index: 10;
     background-color: #FF0000;
-    color: white;
+    color: #000000;
     font-weight: bold;
     font-size: 16px;
     border: none;
@@ -238,7 +259,7 @@ p {
 
 .location-btn {
     background: rgb(55, 128, 55);
-    color: white;
+    color: #000000;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -304,7 +325,7 @@ textarea:focus {
 
 .record-btn {
     background: #FF4444;
-    color: white;
+    color: #000000;
     border: none;
     padding: 15px 30px;
     border-radius: 8px;
@@ -371,7 +392,7 @@ textarea:focus {
 
 .submit-btn {
     background: rgb(55, 128, 55);
-    color: white;
+    color: #000000;
     border: none;
     padding: 15px 40px;
     border-radius: 8px;
@@ -428,6 +449,37 @@ textarea:focus {
 }
 
 @media (max-width: 768px) {
+    nav {
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 1vh 0;
+        position: fixed;
+    }
+
+    nav a {
+        height: 6vh;
+        width: auto;
+        padding: 0 2.5vh;
+        margin: 1vh 1vh;
+    }
+
+    .map-container {
+        width: 100vw;
+        height: calc(100vh - 56px);
+        margin-top: 56px;
+    }
+
+    /* Place report button just below fixed navbar on mobile */
+    .report-button {
+        top: 72px;
+        right: 16px;
+        bottom: auto;
+        transform: none;
+        font-size: 15px;
+        padding: 12px 18px;
+        border-radius: 999px;
+    }
+
     .report-container {
         padding: 10px;
         margin-top: 10vh;

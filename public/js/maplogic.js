@@ -1,16 +1,58 @@
+// This function is the entry point, called by the Google Maps script tag
 function initMap() {
+    // 1. Define coordinates for Tirana
     const tirana = { lat: 41.3275, lng: 19.8187 };
+
+    // 2. Create the map object and specify the DOM element for display.
     const map = new google.maps.Map(document.getElementById("googleMap"), {
         center: tirana,
         zoom: 13,
-        mapTypeId: 'satellite'
+        mapTypeId: 'satellite' // You can use 'roadmap', 'satellite', 'hybrid', 'terrain'
     });
+
+    // 3. Fetch data from our backend and create the heatmap
     fetchReportsAndDrawHeatmap(map);
+
+    // 4. Request geolocation permission and mark current position if granted
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const accuracyMeters = pos.coords.accuracy;
+                new google.maps.Marker({
+                    position: current,
+                    map,
+                    title: 'You are here'
+                });
+                // Draw accuracy circle if available
+                if (typeof accuracyMeters === 'number') {
+                    new google.maps.Circle({
+                        strokeColor: '#1E90FF',
+                        strokeOpacity: 0.6,
+                        strokeWeight: 1,
+                        fillColor: '#1E90FF',
+                        fillOpacity: 0.15,
+                        map,
+                        center: current,
+                        radius: accuracyMeters
+                    });
+                }
+                map.setCenter(current);
+                map.setZoom(16);
+            },
+            (err) => {
+                console.warn('Geolocation permission denied or unavailable:', err);
+            },
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+        );
+    }
 }
 
+// Function to get the report data from our server
 async function fetchReportsAndDrawHeatmap(map) {
     try {
-        const response = await fetch('http://localhost:3000/api/reports');
+        // Use relative path so it works on mobile devices accessing over LAN
+        const response = await fetch('/api/reports');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -88,7 +130,7 @@ async function fetchReportsAndDrawHeatmap(map) {
         // Optionally add circles or markers for high density
 
     } catch (error) {
-        console.error("Could not fetch reports:", error);
-        document.getElementById("googleMap").innerText = "Could not load map data. Is the backend server running?";
+        console.warn("Could not fetch reports (showing map without heatmap):", error);
+        // Keep the map visible even if data fails to load
     }
 }

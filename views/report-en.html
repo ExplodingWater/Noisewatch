@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Report Noise - Noisewatch Tirana</title>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="/en"></a>
+        <a href="/en">Home</a>
+        <a href="/en/about">About Us</a>
+        <a href="/en/services">Services</a>
+        <a href="/en/map">Map</a>
+        <a href="/en/report">Report</a>
+        <a class="al" href="/report" title="Albanian"></a>
+        <a class="en" href="/en/report" title="English"></a>
+    </nav>
+
+    <main class="report-container">
+        <div class="report-form">
+            <h1>Report noise commotion</h1>
+            <p class="subtitle">Report a noise commotion near you.</p>
+
+            <form id="noiseReportForm">
+                <div class="form-section location-section">
+                    <div class="location-header">
+                        <h2>📍 Location</h2>
+                        <button type="button" id="getLocationBtn" class="location-btn">
+                            📍 Use Current Location
+                        </button>
+                    </div>
+                    <p class="location-status" id="locationStatus">Click to get your current location</p>
+                    <p class="permission-hint" id="locationPermissionHint" style="display:none;">
+                        Location permission is blocked. Please enable it in your browser settings and try again.
+                    </p>
+                    <div class="coordinates" id="coordinates" style="display: none;">
+                        <p>Latitude: <span id="latitude"></span></p>
+                        <p>Longitude: <span id="longitude"></span></p>
+                    </div>
+                    <div class="coordinates" id="accuracy" style="display:none;">
+                        <p>Accuracy: <span id="accuracyMeters">--</span> meters</p>
+                        <p style="font-size:12px;color:rgba(0,0,0,0.6)">Tip: For best accuracy, enable GPS, go outside with a clear sky view, and wait a few seconds.</p>
+                    </div>
+                    <p style="font-size:12px;color:rgba(0,0,0,0.6)">Warning: Submitting reports from a laptop or desktop computer is likely to be very inaccurate.</p>
+                </div>
+
+                <div class="form-section">
+                    <h2>Description</h2>
+                    <textarea 
+                        id="description" 
+                        placeholder="Briefly describe the noise (e.g., 'Loud construction work', 'Traffic noise', 'Music from nearby bar')"
+                        required
+                        maxlength="255"
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/255 characters
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Audio Recording for dB Measurement</h2>
+                    <div class="recording-controls">
+                        <button type="button" id="startRecordingBtn" class="record-btn">
+                            Record
+                        </button>
+                        <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
+                            Stop
+                        </button>
+                    </div>
+                    
+                    <div class="recording-status" id="recordingStatus">
+                        Click "Start Recording" to begin 5-second audio capture
+                    </div>
+                    <p class="permission-hint" id="microphonePermissionHint" style="display:none; text-align:center;">
+                        Microphone permission is blocked. Please enable it in your browser settings and try again.
+                    </p>
+                    
+                    <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
+                        <canvas id="visualizerCanvas" width="300" height="100"></canvas>
+                    </div>
+                    
+                    <div class="db-display" id="dbDisplay" style="display: none;">
+                        <div class="db-value">
+                            <span id="dbValue">--</span> dB
+                        </div>
+                        <div class="db-level" id="dbLevel"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <button type="submit" id="submitBtn" class="submit-btn" disabled>
+                        Submit Report
+                    </button>
+                    <p class="privacy-note">
+                        Your report will be submitted anonymously. No personal information is collected.
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="/js/report-logic.js"></script>
+</body>
+</html>
+
