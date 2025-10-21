@@ -9,7 +9,8 @@ body {
 
 nav {
   display: flex;
-  background-color: #000000;
+  background: #090979;
+  background: linear-gradient(90deg, rgba(9, 9, 121, 1) 0%, rgba(2, 2, 51, 1) 35%, rgba(0, 89, 107, 1) 100%);
   justify-content: flex-end; 
   align-items: center;
   position: fixed;
@@ -23,10 +24,12 @@ nav {
 nav a {
   color: white;  
   text-decoration: none; 
+  padding-left: 1vh;
+  padding-right: 1vh;
   height: 5vh;
   width: 10vh;
   border-radius: 6vh;
-  background-color: #000000;
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;       
@@ -38,17 +41,32 @@ nav a {
 }
 
 nav a:visited {
-  color: white;    
+  border-color: white; 
 }
 
 nav a:hover {
-  background-color: white;
-  border:#000000;
-  color: #000000;  
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 25px rgba(255, 255, 255, 0.25),
+              inset 0 1px 3px rgba(255, 255, 255, 0.3);
 }
 
 nav a:active {
-  color: rgba(0, 0, 0, 0.603);         
+  border-color: white;
+}
+
+.logo{
+    position: absolute;
+    left: 10vh;
+    top: 3vh;
+    transform: translateY(-50%);
+    height: 15vh;
+    width: 20vh;
+    border-radius: 2vh;
+    background-image: url('logonoisewatch.png');
+    background-size: cover;
+    background-position: center;
+    text-decoration: none;
+    z-index: 999;
 }
 
 .al {
@@ -63,7 +81,7 @@ nav a:active {
 }
 
 .al:visited {
-  color: white;         
+    color: white;         
 }
 
 .en {
@@ -108,7 +126,8 @@ p {
 #footer{
   margin-top: 15vh;
   padding-top: 5vh;
-  background-color: rgb(55, 128, 55);
+  background: #090979;
+  background: linear-gradient(90deg, rgba(9, 9, 121, 1) 0%, rgba(2, 2, 51, 1) 35%, rgba(0, 89, 107, 1) 100%);
   width: 100%;
 }
 
