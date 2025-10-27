@@ -5,6 +5,7 @@ class NoiseReporter {
         this.analyser = null;
         this.microphone = null;
         this.preGrantedMicStream = null;
+    this.activeStream = null; // the stream in use for the current recording session
         this.isRecording = false;
         this.recordedChunks = [];
         this.currentLocation = null;
@@ -27,6 +28,8 @@ class NoiseReporter {
         this.charCount = document.getElementById('charCount');
         this.startRecordingBtn = document.getElementById('startRecordingBtn');
         this.stopRecordingBtn = document.getElementById('stopRecordingBtn');
+    this.enableMicBtn = document.getElementById('enableMicBtn');
+    this.micPermissionStatus = document.getElementById('micPermissionStatus');
         this.recordingStatus = document.getElementById('recordingStatus');
         this.locationPermissionHint = document.getElementById('locationPermissionHint');
         this.microphonePermissionHint = document.getElementById('microphonePermissionHint');
@@ -42,8 +45,54 @@ class NoiseReporter {
         this.getLocationBtn.addEventListener('click', () => this.requestIOSLocationPermissionThenGet());
         this.description.addEventListener('input', () => this.updateCharCount());
         this.startRecordingBtn.addEventListener('click', () => this.requestIOSMicrophonePermissionThenRecord());
+        if (this.enableMicBtn) this.enableMicBtn.addEventListener('click', () => this.promptMicrophonePermission());
         this.stopRecordingBtn.addEventListener('click', () => this.stopRecording());
         this.form.addEventListener('submit', (e) => this.submitReport(e));
+    }
+
+    // Public helper to prompt for microphone permission explicitly and show status
+    async promptMicrophonePermission() {
+        try {
+            // Check secure context for iOS; localhost is allowed
+            const host = window.location.hostname;
+            if (!window.isSecureContext && host !== 'localhost' && host !== '127.0.0.1') {
+                this.micPermissionStatus.style.display = 'block';
+                this.micPermissionStatus.textContent = 'Microphone access requires HTTPS or localhost. Use HTTPS or open on localhost.';
+                return;
+            }
+
+            this.micPermissionStatus.style.display = 'block';
+            this.micPermissionStatus.textContent = 'Requesting microphone permission...';
+
+            // If Permissions API available, show current state
+            let state = 'unknown';
+            try {
+                state = await this.checkMicrophonePermission();
+                console.log('Permission state before prompt:', state);
+            } catch (e) {
+                console.warn('Could not query permission state', e);
+            }
+
+            // Request a short-lived stream to trigger the permission dialog
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Save for reuse to avoid multiple prompts
+            this.preGrantedMicStream = stream;
+
+            // Immediately mark status as granted and keep the stream for reuse
+            this.micPermissionStatus.textContent = 'Microphone permission granted.';
+            console.log('Microphone stream obtained and stored for reuse');
+        } catch (err) {
+            console.error('Error requesting microphone permission:', err);
+            this.micPermissionStatus.style.display = 'block';
+            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+                this.micPermissionStatus.textContent = 'Microphone permission denied. Please enable it in your browser settings.';
+                this.microphonePermissionHint.style.display = 'block';
+            } else if (err && err.name === 'NotFoundError') {
+                this.micPermissionStatus.textContent = 'No microphone found on this device.';
+            } else {
+                this.micPermissionStatus.textContent = 'Could not get microphone: ' + (err.message || err.name || 'unknown error');
+            }
+        }
     }
 
     // iOS-specific helpers: trigger permission prompts directly from user gesture handlers
@@ -56,7 +105,29 @@ class NoiseReporter {
         try {
             // If we already obtained a mic stream (e.g., from a prior prompt), reuse it
             if (!this.preGrantedMicStream) {
+                // If not a secure context (HTTPS) and not localhost, iOS Safari will
+                // refuse to show the microphone prompt. Inform the user.
+                const host = window.location.hostname;
+                if (!window.isSecureContext && host !== 'localhost' && host !== '127.0.0.1') {
+                    this.recordingStatus.textContent = 'Microphone access requires a secure connection (HTTPS). Open the site via HTTPS or on localhost, or use a tunnel (e.g., ngrok).';
+                    this.microphonePermissionHint.style.display = 'block';
+                    console.warn('Attempted getUserMedia in insecure context:', window.location.href);
+                    return;
+                }
+
+                // Log current permission state when available for diagnostics
+                try {
+                    const perm = await this.checkMicrophonePermission();
+                    console.log('Microphone permission state before prompt:', perm);
+                } catch (e) {
+                    console.warn('Could not query microphone permission state', e);
+                }
+
+                // Request a lightweight audio stream to prompt for permission on iOS.
+                // We keep it so repeated recordings don't prompt again.
+                console.log('Requesting microphone access via getUserMedia()');
                 this.preGrantedMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('getUserMedia resolved, stream obtained');
             }
             await this.startRecording(this.preGrantedMicStream);
         } catch (e) {
@@ -118,18 +189,23 @@ class NoiseReporter {
     async startRecording(preExistingStream) {
         try {
             // Request microphone access
-            const stream = preExistingStream || await navigator.mediaDevices.getUserMedia({ 
+            const stream = preExistingStream || await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     sampleRate: 44100
-                } 
+                }
             });
+
+            // Keep track of the active stream for correct cleanup later.
+            this.activeStream = stream;
 
             // Set up audio context for real-time analysis
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.analyser = this.audioContext.createAnalyser();
-            this.microphone = this.audioContext.createMediaStreamSource(stream);
+            // createMediaStreamSource does not expose the original MediaStream in all browsers,
+            // so we keep `this.activeStream` and stop tracks from it when needed.
+            this.microphone = this.audioContext.createMediaStreamSource(this.activeStream);
             
             this.analyser.fftSize = 256;
             this.microphone.connect(this.analyser);
@@ -183,9 +259,26 @@ class NoiseReporter {
             this.mediaRecorder.stop();
             this.isRecording = false;
 
-            // Stop all tracks
-            if (this.microphone && this.microphone.mediaStream) {
-                this.microphone.mediaStream.getTracks().forEach(track => track.stop());
+            // Stop tracks for the active stream if it's not the preserved pre-granted stream.
+            // If we used a pre-granted stream for prompting we may want to keep it alive
+            // for reuse across recordings; only stop transient streams.
+            try {
+                if (this.activeStream && this.activeStream.getTracks) {
+                    const tracks = this.activeStream.getTracks();
+                    // If the active stream is the same object as preGrantedMicStream, don't stop it
+                    const shouldStop = !(this.preGrantedMicStream && this.preGrantedMicStream === this.activeStream);
+                    if (shouldStop) {
+                        tracks.forEach(track => track.stop());
+                    }
+                }
+            } catch (e) {
+                // Non-fatal: some browsers expose different stream objects; ignore stop errors
+                console.warn('Error stopping active stream tracks:', e);
+            }
+
+            // Clear active stream reference (we may keep preGrantedMicStream intact)
+            if (!(this.preGrantedMicStream && this.preGrantedMicStream === this.activeStream)) {
+                this.activeStream = null;
             }
 
             // Update UI
@@ -193,6 +286,29 @@ class NoiseReporter {
             this.stopRecordingBtn.disabled = true;
             this.recordingStatus.textContent = 'Processing audio...';
             this.audioVisualizer.style.display = 'none';
+        }
+    }
+
+    // Permission helpers: gracefully handle browsers (Safari/iOS) that don't
+    // fully implement the Permissions API.
+    async checkMicrophonePermission() {
+        try {
+            if (!navigator.permissions) return 'unknown';
+            const status = await navigator.permissions.query({ name: 'microphone' });
+            return status.state; // 'granted' | 'denied' | 'prompt'
+        } catch (e) {
+            // Safari may throw or not support microphone in Permissions API
+            return 'unknown';
+        }
+    }
+
+    async checkLocationPermission() {
+        try {
+            if (!navigator.permissions) return 'unknown';
+            const status = await navigator.permissions.query({ name: 'geolocation' });
+            return status.state; // 'granted' | 'denied' | 'prompt'
+        } catch (e) {
+            return 'unknown';
         }
     }
 
@@ -267,8 +383,25 @@ class NoiseReporter {
     }
 
     rmsToDb(rms) {
+        // Microphone signals are typically small floating values (<1) which
+        // produce negative dBFS values. To map these into a consumer-friendly
+        // positive dB-like scale we apply a calibration offset. The offset
+        // may need tuning per device; default is chosen to map typical
+        // mobile microphone RMS values into the 30-100 dB range.
         if (rms === 0) return -Infinity;
-        return 20 * Math.log10(rms);
+
+        const rawDb = 20 * Math.log10(rms);
+
+    // Calibration settings - tweak these if recordings look too low/high.
+    // A higher offset will raise measured values; devices with very low
+    // sensitivity may need larger offsets. Lowered slightly from 120 -> 115
+    // to avoid systematic overestimation.
+    const CALIBRATION_OFFSET = 115; // default offset in dB
+        const calibrated = rawDb + CALIBRATION_OFFSET;
+
+        // Clamp to a reasonable range and return a numeric value.
+        const clamped = Math.max(-100, Math.min(200, calibrated));
+        return clamped;
     }
 
     displayDbLevel(dbLevel) {

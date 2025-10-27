@@ -63,6 +63,9 @@
                         <button type="button" id="startRecordingBtn" class="record-btn">
                             Regjistro
                         </button>
+                        <button type="button" id="enableMicBtn" class="record-btn enable-mic">
+                            Aktivizo Mikrofonin
+                        </button>
                         <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
                             Stop
                         </button>
@@ -74,6 +77,7 @@
                     <p class="permission-hint" id="microphonePermissionHint" style="display:none; text-align:center;">
                         Leja per perdorimin e  mikrofonit është bllokuar. Ju lutemi aktivizojeni në cilësimet e browserit tuaj dhe provojeni përsëri.
                     </p>
+                    <p id="micPermissionStatus" style="display:none; text-align:center; font-size:13px; color:#333;"></p>
                     
                     <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
                         <canvas id="visualizerCanvas" width="300" height="100"></canvas>

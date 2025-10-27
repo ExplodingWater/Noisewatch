@@ -65,6 +65,9 @@
                         <button type="button" id="startRecordingBtn" class="record-btn">
                             Record
                         </button>
+                        <button type="button" id="enableMicBtn" class="record-btn enable-mic">
+                            Enable Microphone
+                        </button>
                         <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
                             Stop
                         </button>
@@ -76,6 +79,7 @@
                     <p class="permission-hint" id="microphonePermissionHint" style="display:none; text-align:center;">
                         Microphone permission is blocked. Please enable it in your browser settings and try again.
                     </p>
+                    <p id="micPermissionStatus" style="display:none; text-align:center; font-size:13px; color:#333;"></p>
                     
                     <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
                         <canvas id="visualizerCanvas" width="300" height="100"></canvas>
