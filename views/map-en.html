@@ -20,7 +20,17 @@
 
     <main class="map-container">
         <div id="googleMap"></div>
-        <button class="report-button" onclick="window.location.href='/en/report'">Report Commotion</button>
+                <div id="map-controls">
+                        <button class="report-button" onclick="window.location.href='/en/report'">Report Commotion</button>
+                </div>
+                        <div id="heatmap-legend" aria-label="Heatmap legend">
+                            <span class="legend-dot" style="background:#4caf50"></span>
+                            <span class="legend-label">Quiet zones: under 50 dB</span>
+                            <span class="legend-dot" style="background:#ffc107"></span>
+                            <span class="legend-label">Normal noise: 51-80 dB</span>
+                            <span class="legend-dot" style="background:#f44336"></span>
+                            <span class="legend-label">High noise: above 80 dB</span>
+                        </div>
     </main>
 
     <script src="/js/maplogic.js"></script>

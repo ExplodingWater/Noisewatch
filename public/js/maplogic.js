@@ -98,12 +98,12 @@ async function fetchReportsAndDrawHeatmap(map) {
             '#f44336'                   // Red (very loud)
         ];
         // For Google heatmap, point color depends on weight; but to get true buckets, we'll use multiple layers, one per band.
-        const bands = [
-          { name: 'green', colorIdx: 1, min: -Infinity, max: 50 },
-          { name: 'yellow', colorIdx: 2, min: 51, max: 60 },
-          { name: 'orange', colorIdx: 3, min: 61, max: 80 },
-          { name: 'red', colorIdx: 4, min: 81, max: Infinity }
-        ];
+                // Updated bands: <=50 Quiet, 51-80 Normal, >80 High
+                const bands = [
+                    { name: 'green', colorIdx: 1, min: -Infinity, max: 50 },
+                    { name: 'yellow', colorIdx: 2, min: 51, max: 80 },
+                    { name: 'red', colorIdx: 4, min: 81, max: Infinity }
+                ];
         bands.forEach(band => {
             const data = [];
             clusters.forEach(cl => {
