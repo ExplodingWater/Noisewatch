@@ -335,6 +335,15 @@ textarea:focus {
     transition: all 0.3s;
 }
 
+.record-btn.enable-mic {
+    background: #1976D2;
+    color: #fff;
+}
+
+.record-btn.enable-mic:hover:not(:disabled) {
+    background: #155fa0;
+}
+
 .record-btn:hover:not(:disabled) {
     background: #CC3333;
     transform: translateY(-2px);
@@ -483,6 +492,22 @@ textarea:focus {
     .report-container {
         padding: 10px;
         margin-top: 10vh;
+    }
+
+    /* Shrink language buttons and logo on mobile to free header space */
+    .al, .en {
+        height: 3.2vh;
+        width: 3.2vh;
+        margin-left: 0.5vh;
+        margin-right: 0.5vh;
+    }
+
+    .logo {
+        left: 4vw;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 8vh;
+        width: 12vh;
     }
     
     .report-form {

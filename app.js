@@ -30,7 +30,9 @@ app.get('/health', (req, res) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+// Use a no-path middleware so we don't pass a literal '*' into path-to-regexp
+// which now rejects '*' as a route string (causes PathError).
+app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'views/index.html'));
 });
 
