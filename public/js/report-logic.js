@@ -410,12 +410,15 @@ class NoiseReporter {
         this.dbDisplay.style.display = 'block';
 
         // Color code based on noise level
-        // New ranges: <=50 Quiet, 51-80 Normal, >80 Very Loud
+        // New ranges: <=50 Quiet, 51-80 Normal, 81-100 Loud, >100 Very Loud
         let level = 'Quiet';
         let color = '#4CAF50'; // Green
 
-        if (roundedDb > 80) {
+        if (roundedDb > 100) {
             level = 'Very Loud';
+            color = '#B71C1C'; // Darker red
+        } else if (roundedDb > 80) {
+            level = 'Loud';
             color = '#F44336'; // Red
         } else if (roundedDb > 50) {
             level = 'Normal';

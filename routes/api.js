@@ -90,7 +90,8 @@ router.get('/reports/stats', async (req, res) => {
         MAX(decibels) as max_decibels,
         COUNT(CASE WHEN decibels <= 50 THEN 1 END) as quiet_reports,
         COUNT(CASE WHEN decibels BETWEEN 51 AND 80 THEN 1 END) as normal_reports,
-        COUNT(CASE WHEN decibels > 80 THEN 1 END) as high_reports
+        COUNT(CASE WHEN decibels BETWEEN 81 AND 100 THEN 1 END) as high_reports,
+        COUNT(CASE WHEN decibels > 100 THEN 1 END) as very_high_reports
       FROM reports;
     `;
 
