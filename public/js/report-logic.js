@@ -53,7 +53,7 @@ class NoiseReporter {
     // Public helper to prompt for microphone permission explicitly and show status
     async promptMicrophonePermission() {
         try {
-            // Check secure context for iOS; localhost is allowed
+            // Check secure context for iOS; localhost is allowed. This was so bullcrap in the beginning because I didn't know you had to use ngrok to test in iOS and I was losing my mind for a proper week or so. 
             const host = window.location.hostname;
             if (!window.isSecureContext && host !== 'localhost' && host !== '127.0.0.1') {
                 this.micPermissionStatus.style.display = 'block';
@@ -84,7 +84,7 @@ class NoiseReporter {
         } catch (err) {
             console.error('Error requesting microphone permission:', err);
             this.micPermissionStatus.style.display = 'block';
-            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) { // Usually browser errors for denied permission
                 this.micPermissionStatus.textContent = 'Microphone permission denied. Please enable it in your browser settings.';
                 this.microphonePermissionHint.style.display = 'block';
             } else if (err && err.name === 'NotFoundError') {
@@ -185,7 +185,7 @@ class NoiseReporter {
             this.getLocationBtn.disabled = false;
         }
     }
-
+// Oh man the hell I had to go through just so that stupid Apple devices would allow me to access the microphone
     async startRecording(preExistingStream) {
         try {
             // Request microphone access
