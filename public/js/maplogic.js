@@ -19,26 +19,28 @@ function initMap() {
             (pos) => {
                 const current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 const accuracyMeters = pos.coords.accuracy;
-                new google.maps.Marker({
-                    position: current,
-                    map,
-                    title: 'You are here'
-                });
-                // Draw accuracy circle if available
-                if (typeof accuracyMeters === 'number') {
-                    new google.maps.Circle({
-                        strokeColor: '#1E90FF',
-                        strokeOpacity: 0.6,
-                        strokeWeight: 1,
-                        fillColor: '#1E90FF',
-                        fillOpacity: 0.15,
+                // Only show marker & circle if user location is significantly different from map's Tirana center
+                if (Math.abs(current.lat - 41.3275) > 0.0005 || Math.abs(current.lng - 19.8187) > 0.0005) {
+                    new google.maps.Marker({
+                        position: current,
                         map,
-                        center: current,
-                        radius: accuracyMeters
+                        title: 'You are here'
                     });
+                    if (typeof accuracyMeters === 'number') {
+                        new google.maps.Circle({
+                            strokeColor: '#1E90FF',
+                            strokeOpacity: 0.6,
+                            strokeWeight: 1,
+                            fillColor: '#1E90FF',
+                            fillOpacity: 0.15,
+                            map,
+                            center: current,
+                            radius: accuracyMeters
+                        });
+                    }
+                    map.setCenter(current);
+                    map.setZoom(16);
                 }
-                map.setCenter(current);
-                map.setZoom(16);
             },
             (err) => {
                 console.warn('Geolocation permission denied or unavailable:', err);
@@ -89,18 +91,22 @@ async function fetchReportsAndDrawHeatmap(map) {
 
         // --- HEATMAP DATA & COLOR LOGIC ---
         const customGradient = [
-            'rgba(76, 175, 80, 0)',      // Quiet/transparent
-            'rgba(76, 175, 80, 1)',      // Green
-            'rgba(255, 193, 7, 1)',      // Yellow
-            'rgba(255, 152, 0, 1)',      // Orange
-            'rgba(244, 67, 54, 1)'       // Red
+            'rgba(76, 175, 80, 0)',      // Transparent
+            '#4caf50',                  // Green (quiet)
+            '#ffc107',                  // Yellow (medium)
+            '#ff9800',                  // Orange (loud)
+            '#f44336'                   // Red (very loud)
         ];
-        // For Google heatmap, point color depends on weight; but to get true buckets I used multiple layers so one per band
+
+        // For Google heatmap, point color depends on weight; we render multiple layers,
+        // one per decibel band so we can approximate categorical coloring.
+        // Use the same bands as server-side stats: <=50 quiet, 51-60 moderate,
+        // 61-80 high, >80 very high.
         const bands = [
-          { name: 'green', colorIdx: 1, min: -Infinity, max: 50 },
-          { name: 'yellow', colorIdx: 2, min: 51, max: 60 },
-          { name: 'orange', colorIdx: 3, min: 61, max: 80 },
-          { name: 'red', colorIdx: 4, min: 81, max: Infinity }
+            { name: 'green', colorIdx: 1, min: -Infinity, max: 50 },
+            { name: 'yellow', colorIdx: 2, min: 51, max: 60 },
+            { name: 'orange', colorIdx: 3, min: 61, max: 80 },
+            { name: 'red', colorIdx: 4, min: 81, max: Infinity }
         ];
         bands.forEach(band => {
             const data = [];
