@@ -95,7 +95,7 @@ async function fetchReportsAndDrawHeatmap(map) {
             'rgba(255, 152, 0, 1)',      // Orange
             'rgba(244, 67, 54, 1)'       // Red
         ];
-        // For Google heatmap, point color depends on weight; but to get true buckets, we'll use multiple layers, one per band.
+        // For Google heatmap, point color depends on weight; but to get true buckets I used multiple layers so one per band
         const bands = [
           { name: 'green', colorIdx: 1, min: -Infinity, max: 50 },
           { name: 'yellow', colorIdx: 2, min: 51, max: 60 },
@@ -112,7 +112,7 @@ async function fetchReportsAndDrawHeatmap(map) {
                     for (let i = 0; i < 1; i++) {
                         data.push({
                             location: new google.maps.LatLng(cl.lat, cl.lng),
-                            weight: avgDb // use avgDb so color mapping is more accurate
+                            weight: avgDb // used avgDb so color mapping is more accurate
                         });
                     }
                 }
@@ -120,17 +120,17 @@ async function fetchReportsAndDrawHeatmap(map) {
             if (data.length > 0) {
                 const heatmap = new google.maps.visualization.HeatmapLayer({
                     data: data,
-                    radius: 20 + 10 * Math.min(10, data.length), // scale radius up to 10x size
+                    radius: 20 + 10 * Math.min(10, data.length), // scaled radius up to 10x size
                     opacity: 0.7,
                     gradient: [customGradient[0], customGradient[band.colorIdx]]
                 });
                 heatmap.setMap(map);
             }
         });
-        // Optionally add circles or markers for high density
+        // Optionally you can add circles or markers for high density
 
     } catch (error) {
         console.warn("Could not fetch reports (showing map without heatmap):", error);
-        // Keep the map visible even if data fails to load
+        // Keeps the map visible even if data fails to load
     }
 }
