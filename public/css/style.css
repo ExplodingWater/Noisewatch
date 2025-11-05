@@ -54,7 +54,7 @@ nav a:active {
   border-color: white;
 }
 
-.logo{
+.logo {
     position: absolute;
     left: 10vh;
     top: 3vh;
@@ -67,6 +67,15 @@ nav a:active {
     background-position: center;
     text-decoration: none;
     z-index: 999;
+    /* Remove pointer and hover effect */
+    cursor: default;
+    transition: none;
+}
+
+/* Remove any hover effect for .logo */
+nav .logo:hover {
+    background: none;
+    box-shadow: none;
 }
 
 .al {
