@@ -153,10 +153,27 @@ async function fetchReportsAndDrawHeatmap(map) {
                         const parts = [];
                         parts.push(`<strong>Avg: ${Math.round(avgDb)} dB</strong> — ${reportCount} report(s)`);
                         const reportLines = cl.reports.slice(0,5).map(r => {
-                            // Prefer submitted_time (HH:MM:SS) returned by the server; fall back to created_at timestamp.
+                            // Format timestamps in Albanian local time (Europe/Tirane), show date and HH:MM:SS (24h)
                             const created = r.created_at ? new Date(r.created_at) : null;
-                            const dateStr = created ? created.toLocaleDateString() : '';
-                            const timeStr = r.submitted_time || (created ? created.toLocaleTimeString() : '');
+                            let dateStr = '';
+                            let timeStr = '';
+                            try {
+                                if (created) {
+                                    dateStr = created.toLocaleDateString('sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Tirane' });
+                                    timeStr = created.toLocaleTimeString('sq-AL', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Tirane' });
+                                } else if (r.submitted_time) {
+                                    // fallback: server-provided time string (assumed HH:MM:SS)
+                                    timeStr = r.submitted_time;
+                                }
+                            } catch (e) {
+                                // graceful fallback
+                                if (created) {
+                                    dateStr = created.toLocaleDateString();
+                                    timeStr = created.toLocaleTimeString();
+                                } else {
+                                    timeStr = r.submitted_time || '';
+                                }
+                            }
                             const dbStr = (typeof r.decibels !== 'undefined' && r.decibels !== null) ? `${Math.round(r.decibels)} dB` : '';
                             const desc = (r.description || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
                             return `<div style="margin-top:6px;"><small>${dateStr} ${timeStr} — <strong>${dbStr}</strong></small><div>${desc}</div></div>`;
