@@ -18,6 +18,11 @@ app.use('/images', express.static(path.join(__dirname, 'public/images')));
 // Serve data files (GeoJSON, etc.)
 app.use('/data', express.static(path.join(__dirname, 'data')));
 
+// Serve a small favicon to avoid 404 noisy logs
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'favicon.svg'));
+});
+
 // Routes
 app.use('/api', require('./routes/api'));
 app.use('/', require('./routes/pages'));

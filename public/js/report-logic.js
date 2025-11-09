@@ -174,7 +174,8 @@ class NoiseReporter {
 
             this.currentLocation = {
                 latitude: position.coords.latitude,
-                longitude: position.coords.longitude
+                longitude: position.coords.longitude,
+                accuracy: (typeof position.coords.accuracy === 'number') ? Math.round(position.coords.accuracy) : null
             };
 
             if (this.latitude) this.latitude.textContent = this.currentLocation.latitude.toFixed(6);
@@ -224,11 +225,12 @@ class NoiseReporter {
             const data = await resp.json();
             const key = data.key || '';
             const script = document.createElement('script');
+            // Request geometry + marker libraries and include Google's loading=async flag
             script.async = true;
             script.defer = true;
             script.onload = () => { this._mapsLoaded = true; };
             script.onerror = (e) => { throw e || new Error('Failed to load Google Maps script'); };
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=geometry`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=geometry,marker&loading=async`;
             document.head.appendChild(script);
             // Wait until google.maps is available
             await new Promise((resolve, reject) => {
@@ -287,7 +289,15 @@ class NoiseReporter {
                 zoom: 15,
                 disableDefaultUI: true
             });
-            new google.maps.Marker({ position: center, map, title: 'Your reported location' });
+            try {
+                if (google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+                    new google.maps.marker.AdvancedMarkerElement({ position: center, map, title: 'Your reported location' });
+                } else {
+                    new google.maps.Marker({ position: center, map, title: 'Your reported location' });
+                }
+            } catch (e) {
+                try { new google.maps.Marker({ position: center, map, title: 'Your reported location' }); } catch (err) { /* ignore */ }
+            }
         } catch (e) {
             console.warn('Unable to initialize location map:', e);
         }
@@ -606,7 +616,12 @@ class NoiseReporter {
                 latitude: this.currentLocation.latitude,
                 longitude: this.currentLocation.longitude,
                 decibels: dbLevel,
-                description: this.description.value.trim()
+                description: this.description.value.trim(),
+                // Add diagnostic fields so server can store device and accuracy info
+                device_info: (navigator && navigator.userAgent) ? navigator.userAgent : null,
+                source: 'browser',
+                accuracy_meters: (this.currentLocation && typeof this.currentLocation.accuracy === 'number') ? this.currentLocation.accuracy : null,
+                audio_path: null
             };
 
             const response = await fetch('/api/reports', {

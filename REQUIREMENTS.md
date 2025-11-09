@@ -70,7 +70,7 @@ DB_PASSWORD=postgres
 DB_DATABASE=noisewatch
 DB_CALIB_OFFSET=115  # optional: server-side calibration offset in dB
 NODE_ENV=development
-GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE  # optional, used on pages that display maps
+GOOGLE_MAPS_API_KEY=AIzaSyBL-1ScqRSE8y09moL0NHF49JkpK_Grhf4  # optional, used on pages that display maps
 ```
 
 Notes:

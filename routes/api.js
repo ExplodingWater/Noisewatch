@@ -22,7 +22,11 @@ function pointInPolygon(lat, lng, polygon) {
 
 // Expose API to return the maps key to the client (serves from env). Keep careful access control in production.
 router.get('/maps-key', (req, res) => {
-  res.json({ key: process.env.GOOGLE_MAPS_API_KEY || '' });
+  // Also return optional Map ID for vector maps / advanced features
+  res.json({
+    key: process.env.GOOGLE_MAPS_API_KEY || '',
+    mapId: process.env.GOOGLE_MAPS_MAP_ID || ''
+  });
 });
 
 // GET /api/reports - Get all noise reports
@@ -154,7 +158,8 @@ router.get('/reports/stats', async (req, res) => {
 router.get('/reports/recent', async (req, res) => {
   try {
     const recentReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time
+      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time,
+             device_info, source, accuracy_meters, audio_path, severity
       FROM reports
       WHERE created_at >= NOW() - INTERVAL '24 hours'
       ORDER BY created_at DESC;
