@@ -13,6 +13,17 @@ class NoiseReporter {
         
         this.initializeElements();
         this.setupEventListeners();
+        // Tirana bounding box (approximate). Adjust as needed.
+        // These are inclusive bounds: lat between MIN_LAT and MAX_LAT, lng between MIN_LNG and MAX_LNG.
+        // If you need exact municipal borders, replace this with a GeoJSON polygon and use point-in-polygon.
+        this.TIRANA_BOUNDS = {
+            MIN_LAT: 41.20,
+            MAX_LAT: 41.45,
+            MIN_LNG: 19.65,
+            MAX_LNG: 19.98
+        };
+        this.withinBounds = false;
+        this._mapsLoaded = false;
     }
 
     initializeElements() {
@@ -39,6 +50,8 @@ class NoiseReporter {
         this.dbValue = document.getElementById('dbValue');
         this.dbLevel = document.getElementById('dbLevel');
         this.submitBtn = document.getElementById('submitBtn');
+        this.locationMapDiv = document.getElementById('locationMap');
+        this.outOfBoundsMsg = document.getElementById('outOfBoundsMsg');
     }
 
     setupEventListeners() {
@@ -174,6 +187,15 @@ class NoiseReporter {
             this.locationStatus.textContent = 'Location captured!';
             this.getLocationBtn.textContent = 'Update location';
             this.getLocationBtn.disabled = false;
+            // Render confirmation map and check bounds
+            try {
+                await this.ensureGoogleMapsLoaded();
+                this.renderLocationMap(this.currentLocation.latitude, this.currentLocation.longitude);
+            } catch (e) {
+                // If maps fail to load, still perform bounds check using bbox
+                console.warn('Google Maps failed to load for location preview:', e);
+            }
+            this.evaluateBoundsAndUI();
             this.checkFormValidity();
 
         } catch (error) {
@@ -183,6 +205,67 @@ class NoiseReporter {
                 this.locationPermissionHint.style.display = 'block';
             }
             this.getLocationBtn.disabled = false;
+        }
+    }
+
+    // Load Google Maps JS dynamically (uses placeholder API key). Resolves when google.maps is available.
+    ensureGoogleMapsLoaded() {
+        if (this._mapsLoaded) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            if (window.google && window.google.maps) {
+                this._mapsLoaded = true;
+                return resolve();
+            }
+
+            const script = document.createElement('script');
+            // NOTE: Replace YOUR_GOOGLE_MAPS_API_KEY with a real key in production or inject it from server-side env.
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=geometry';
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                this._mapsLoaded = true;
+                resolve();
+            };
+            script.onerror = (err) => reject(err || new Error('Failed to load Google Maps'));
+            document.head.appendChild(script);
+        });
+    }
+
+    renderLocationMap(lat, lng) {
+        if (!this.locationMapDiv) return;
+        this.locationMapDiv.style.display = 'block';
+        // Create a map centered on user location and show a marker
+        try {
+            const center = { lat: parseFloat(lat), lng: parseFloat(lng) };
+            const map = new google.maps.Map(this.locationMapDiv, {
+                center,
+                zoom: 15,
+                disableDefaultUI: true
+            });
+            new google.maps.Marker({ position: center, map, title: 'Your reported location' });
+        } catch (e) {
+            console.warn('Unable to initialize location map:', e);
+        }
+    }
+
+    evaluateBoundsAndUI() {
+        if (!this.currentLocation) return;
+        const lat = this.currentLocation.latitude;
+        const lng = this.currentLocation.longitude;
+        const b = this.TIRANA_BOUNDS;
+        const inside = (lat >= b.MIN_LAT && lat <= b.MAX_LAT && lng >= b.MIN_LNG && lng <= b.MAX_LNG);
+        this.withinBounds = inside;
+        if (!inside) {
+            // Grey out submit and show message
+            this.submitBtn.disabled = true;
+            this.submitBtn.style.opacity = '0.5';
+            this.submitBtn.style.pointerEvents = 'none';
+            if (this.outOfBoundsMsg) this.outOfBoundsMsg.style.display = 'block';
+        } else {
+            // Restore submit appearance; final enabled state still depends on other form validity
+            this.submitBtn.style.opacity = '';
+            this.submitBtn.style.pointerEvents = '';
+            if (this.outOfBoundsMsg) this.outOfBoundsMsg.style.display = 'none';
         }
     }
 // Oh man the hell I had to go through just so that stupid Apple devices would allow me to access the microphone
@@ -441,7 +524,9 @@ class NoiseReporter {
         const hasDescription = this.description.value.trim().length > 0;
         const hasRecording = this.dbDisplay.style.display !== 'none';
 
-        this.submitBtn.disabled = !(hasLocation && hasDescription && hasRecording);
+        // Also ensure location is within Tirana bounds
+        const within = this.withinBounds === undefined ? false : this.withinBounds;
+        this.submitBtn.disabled = !(hasLocation && hasDescription && hasRecording && within);
     }
 
     async submitReport(event) {

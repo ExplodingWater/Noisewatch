@@ -39,6 +39,10 @@
                         <p>Latitude: <span id="latitude"></span></p>
                         <p>Longitude: <span id="longitude"></span></p>
                     </div>
+                    <div id="locationMapContainer" style="margin-top:10px;">
+                        <div id="locationMap" style="width:100%;height:200px;border:1px solid #ddd;display:none;"></div>
+                        <p id="outOfBoundsMsg" style="display:none;color:#b71c1c;font-weight:600;margin-top:8px;">You are outside the Tirana area — you cannot submit a report.</p>
+                    </div>
                     <div class="coordinates" id="accuracy" style="display:none;">
                         <p>Accuracy: <span id="accuracyMeters">--</span> meters</p>
                         <p style="font-size:12px;color:rgba(0,0,0,0.6)">Tip: For best accuracy, enable GPS, go outside with a clear sky view, and wait a few seconds.</p>

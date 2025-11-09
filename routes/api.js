@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
+// Approximate Tirana bounding box for server-side validation.
+// Keep in sync with client-side bounds in report-logic.js. Adjust if you need more precise municipal borders.
+const TIRANA_BOUNDS = {
+  MIN_LAT: 41.20,
+  MAX_LAT: 41.45,
+  MIN_LNG: 19.65,
+  MAX_LNG: 19.98
+};
+
 // GET /api/reports - Get all noise reports
 router.get('/reports', async (req, res) => {
   try {
@@ -59,6 +68,16 @@ router.post('/reports', async (req, res) => {
     const MAX_DB = 200;
     storedDecibels = Math.max(MIN_DB, Math.min(MAX_DB, storedDecibels));
 
+    // Server-side: ensure coordinates are within Tirana bounding box
+    const latNum = parseFloat(latitude);
+    const lngNum = parseFloat(longitude);
+    if (!isFinite(latNum) || !isFinite(lngNum)) {
+      return res.status(400).json({ error: 'Invalid latitude/longitude' });
+    }
+    if (!(latNum >= TIRANA_BOUNDS.MIN_LAT && latNum <= TIRANA_BOUNDS.MAX_LAT && lngNum >= TIRANA_BOUNDS.MIN_LNG && lngNum <= TIRANA_BOUNDS.MAX_LNG)) {
+      return res.status(400).json({ error: 'Location outside allowed reporting area (Tirana)' });
+    }
+
     const newReportQuery = `
       INSERT INTO reports (decibels, description, geom, submitted_time)
       VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), CURRENT_TIME)
@@ -107,7 +126,7 @@ router.get('/reports/stats', async (req, res) => {
 router.get('/reports/recent', async (req, res) => {
   try {
     const recentReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at
+      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time
       FROM reports
       WHERE created_at >= NOW() - INTERVAL '24 hours'
       ORDER BY created_at DESC;

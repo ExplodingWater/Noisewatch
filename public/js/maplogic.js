@@ -117,6 +117,9 @@ async function fetchReportsAndDrawHeatmap(map) {
             { name: 'orange', colorIdx: 3, min: 61, max: 80 },
             { name: 'red', colorIdx: 4, min: 81, max: Infinity }
         ];
+        const infoWindow = new google.maps.InfoWindow();
+        const markers = [];
+
         bands.forEach(band => {
             const data = [];
             clusters.forEach(cl => {
@@ -129,6 +132,53 @@ async function fetchReportsAndDrawHeatmap(map) {
                             location: new google.maps.LatLng(cl.lat, cl.lng),
                             weight: avgDb // used avgDb so color mapping is more accurate
                         });
+                    }
+                    // Create an interactive marker for this cluster so users can hover/click for details
+                    try {
+                        const color = customGradient[band.colorIdx] || '#666';
+                        const marker = new google.maps.Marker({
+                            position: { lat: cl.lat, lng: cl.lng },
+                            map: map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 6 + Math.min(10, reportCount),
+                                fillColor: color,
+                                fillOpacity: 0.95,
+                                strokeColor: '#333',
+                                strokeWeight: 0.5
+                            }
+                        });
+
+                        // Build info window content using up to 5 reports in the cluster
+                        const parts = [];
+                        parts.push(`<strong>Avg: ${Math.round(avgDb)} dB</strong> — ${reportCount} report(s)`);
+                        const reportLines = cl.reports.slice(0,5).map(r => {
+                            const time = r.submitted_time || new Date(r.created_at).toLocaleTimeString();
+                            const desc = (r.description || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                            return `<div style="margin-top:6px;"><small><strong>${time}</strong></small><div>${desc}</div></div>`;
+                        });
+                        parts.push(reportLines.join(''));
+                        const content = `<div style="max-width:280px">${parts.join('')}</div>`;
+
+                        marker.addListener('mouseover', () => {
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, marker);
+                        });
+                        marker.addListener('mouseout', () => {
+                            // On desktop, close after short delay to allow hover->info interaction
+                            setTimeout(() => {
+                                infoWindow.close();
+                            }, 300);
+                        });
+                        // Also open on click/tap for mobile users
+                        marker.addListener('click', () => {
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, marker);
+                        });
+
+                        markers.push(marker);
+                    } catch (e) {
+                        console.warn('Failed to create interactive marker for cluster', e);
                     }
                 }
             });
