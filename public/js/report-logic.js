@@ -177,14 +177,14 @@ class NoiseReporter {
                 longitude: position.coords.longitude
             };
 
-            this.latitude.textContent = this.currentLocation.latitude.toFixed(6);
-            this.longitude.textContent = this.currentLocation.longitude.toFixed(6);
+            if (this.latitude) this.latitude.textContent = this.currentLocation.latitude.toFixed(6);
+            if (this.longitude) this.longitude.textContent = this.currentLocation.longitude.toFixed(6);
             if (typeof position.coords.accuracy === 'number') {
                 this.accuracyMeters.textContent = Math.round(position.coords.accuracy);
                 this.accuracyBox.style.display = 'block';
             }
             
-            this.coordinates.style.display = 'block';
+            if (this.coordinates) this.coordinates.style.display = 'block';
             this.locationStatus.textContent = 'Location captured!';
             this.getLocationBtn.textContent = 'Update location';
             this.getLocationBtn.disabled = false;
@@ -646,7 +646,7 @@ class NoiseReporter {
 
     resetForm() {
         this.currentLocation = null;
-        this.coordinates.style.display = 'none';
+        if (this.coordinates) this.coordinates.style.display = 'none';
         this.locationStatus.textContent = 'Click to get your current location';
         this.getLocationBtn.textContent = '📍 Use current location';
         this.recordingStatus.textContent = 'Click "Start Recording" to begin audio capture (takes 5 seconds)';
