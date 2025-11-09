@@ -17,6 +17,9 @@ CREATE TABLE reports (
     -- 'geometry(Point, 4326)' means it will store a Point in the WGS 84 coordinate system (standard GPS).
     geom GEOMETRY(Point, 4326) NOT NULL,
 
+    -- 'submitted_time' records the wall-clock time (HH:MM:SS) of submission
+    submitted_time TIME WITHOUT TIME ZONE DEFAULT (CURRENT_TIME),
+
     -- 'created_at' automatically records when a report was created
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

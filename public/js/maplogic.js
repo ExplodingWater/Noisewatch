@@ -60,10 +60,19 @@ async function fetchReportsAndDrawHeatmap(map) {
         }
         const reports = await response.json();
 
+        // Filter reports to only include those submitted within the last 3 hours
+        const threeHoursAgo = Date.now() - (3 * 60 * 60 * 1000);
+        const recentReports = reports.filter(r => {
+            // created_at is expected to be an ISO timestamp string from the server
+            const t = new Date(r.created_at).getTime();
+            return !isNaN(t) && t >= threeHoursAgo;
+        });
+
         // --- CLUSTERING ---
         const clusterDistance = 0.0015; // smaller value = more fine clusters; tweak as needed
         let clusters = [];
-        reports.forEach(r => {
+    // Use the filtered recent reports for clustering and heatmap
+    recentReports.forEach(r => {
             // Try to assign to an existing cluster
             let found = false;
             for (let cl of clusters) {
@@ -113,7 +122,7 @@ async function fetchReportsAndDrawHeatmap(map) {
             clusters.forEach(cl => {
                 const reportCount = cl.reports.length;
                 const avgDb = cl.totalDecibels / reportCount;
-                if (avgDb >= band.min && avgDb <= band.max) {
+                if (avgDb >= band.min && avgDb <= band.max) { 
                     // Weight can be reportCount or avgDb
                     for (let i = 0; i < 1; i++) {
                         data.push({

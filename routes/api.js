@@ -6,7 +6,7 @@ const pool = require('../config/database');
 router.get('/reports', async (req, res) => {
   try {
     const allReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at
+      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time
       FROM reports
       ORDER BY created_at DESC;
     `;
@@ -60,9 +60,9 @@ router.post('/reports', async (req, res) => {
     storedDecibels = Math.max(MIN_DB, Math.min(MAX_DB, storedDecibels));
 
     const newReportQuery = `
-      INSERT INTO reports (decibels, description, geom)
-      VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326))
-      RETURNING id, decibels, description, created_at;
+      INSERT INTO reports (decibels, description, geom, submitted_time)
+      VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), CURRENT_TIME)
+      RETURNING id, decibels, description, created_at, submitted_time;
     `;
 
     const values = [storedDecibels, description, longitude, latitude];
@@ -112,6 +112,8 @@ router.get('/reports/recent', async (req, res) => {
       WHERE created_at >= NOW() - INTERVAL '24 hours'
       ORDER BY created_at DESC;
     `;
+
+    // Note: include submitted_time for client display if present
 
     const result = await pool.query(recentReportsQuery);
     res.json(result.rows);
