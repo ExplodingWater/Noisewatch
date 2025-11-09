@@ -50,6 +50,49 @@ function initMap() {
     }
 }
 
+// Modal helper to show full cluster details
+function showClusterModal(cluster) {
+    try {
+        const modal = document.getElementById('clusterModal');
+        const body = document.getElementById('clusterModalBody');
+        const title = document.getElementById('clusterModalTitle');
+        const close = document.getElementById('clusterModalClose');
+        if (!modal || !body) return;
+        title.textContent = `Cluster — ${cluster.reports.length} report(s)`;
+        body.innerHTML = '';
+        // Build list
+        cluster.reports.forEach(r => {
+            const created = r.created_at ? new Date(r.created_at) : null;
+            let dateStr = '';
+            let timeStr = r.submitted_time || '';
+            try {
+                if (created) {
+                    dateStr = created.toLocaleDateString(document.documentElement.lang === 'en' ? 'en-GB' : 'sq-AL', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Tirane' });
+                    timeStr = r.submitted_time || created.toLocaleTimeString(document.documentElement.lang === 'en' ? 'en-GB' : 'sq-AL', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Tirane' });
+                }
+            } catch (e) {
+                if (created) {
+                    dateStr = created.toLocaleDateString();
+                    timeStr = created.toLocaleTimeString();
+                }
+            }
+            const dbStr = (typeof r.decibels !== 'undefined' && r.decibels !== null) ? `${Math.round(r.decibels)} dB` : '';
+            const desc = (r.description || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const item = document.createElement('div');
+            item.style.padding = '8px 0';
+            item.style.borderBottom = '1px solid #eee';
+            item.innerHTML = `<div style="font-size:13px;color:#333;"><strong>${dateStr} ${timeStr}</strong> — <span style="color:#666">${dbStr}</span></div><div style="margin-top:4px;color:#222">${desc}</div>`;
+            body.appendChild(item);
+        });
+
+        modal.style.display = 'block';
+        close.onclick = () => { modal.style.display = 'none'; };
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    } catch (e) {
+        console.warn('Could not show cluster modal:', e);
+    }
+}
+
 // Function to get the report data from our server
 async function fetchReportsAndDrawHeatmap(map) {
     try {
@@ -179,22 +222,33 @@ async function fetchReportsAndDrawHeatmap(map) {
                             return `<div style="margin-top:6px;"><small>${dateStr} ${timeStr} — <strong>${dbStr}</strong></small><div>${desc}</div></div>`;
                         });
                         parts.push(reportLines.join(''));
-                        const content = `<div style="max-width:280px">${parts.join('')}</div>`;
+                        // Include a "View all" button in the info window which opens a modal
+                        const markerId = `m_${Math.random().toString(36).slice(2,9)}`;
+                        const content = `<div style="max-width:280px">${parts.join('')}<div style="margin-top:8px;text-align:right"><button id="view_${markerId}" style="padding:6px 8px;border-radius:4px;border:1px solid #ccc;background:#f5f5f5;cursor:pointer;">View all</button></div></div>`;
+
+                        marker.addListener('click', () => {
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, marker);
+                            // attach handler after DOM ready for infowindow
+                            google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+                                const btn = document.getElementById(`view_${markerId}`);
+                                if (btn) {
+                                    btn.addEventListener('click', () => {
+                                        showClusterModal(cl);
+                                    });
+                                }
+                            });
+                        });
 
                         marker.addListener('mouseover', () => {
                             infoWindow.setContent(content);
                             infoWindow.open(map, marker);
                         });
+
                         marker.addListener('mouseout', () => {
-                            // On desktop, close after short delay to allow hover->info interaction
                             setTimeout(() => {
                                 infoWindow.close();
                             }, 300);
-                        });
-                        // Also open on click/tap for mobile users
-                        marker.addListener('click', () => {
-                            infoWindow.setContent(content);
-                            infoWindow.open(map, marker);
                         });
 
                         markers.push(marker);
