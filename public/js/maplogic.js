@@ -113,35 +113,6 @@ async function fetchReportsAndDrawHeatmap(map) {
 
         // --- CLUSTERING ---
         const clusterDistance = 0.0015; // smaller value = more fine clusters; tweak as needed
-        let clusters = [];
-    // Use the filtered recent reports for clustering and heatmap
-    recentReports.forEach(r => {
-            // Try to assign to an existing cluster
-            let found = false;
-            for (let cl of clusters) {
-                const dx = cl.lat - r.latitude;
-                const dy = cl.lng - r.longitude;
-                if (Math.sqrt(dx*dx + dy*dy) < clusterDistance) {
-                    cl.reports.push(r);
-                    // Mean update
-                    cl.lat = (cl.lat * (cl.reports.length - 1) + r.latitude) / cl.reports.length;
-                    cl.lng = (cl.lng * (cl.reports.length - 1) + r.longitude) / cl.reports.length;
-                    cl.totalDecibels += r.decibels;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                clusters.push({
-                    lat: r.latitude,
-                    lng: r.longitude,
-                    reports: [r],
-                    totalDecibels: r.decibels
-                });
-            }
-        });
-
-        // --- HEATMAP DATA & COLOR LOGIC ---
         const customGradient = [
             'rgba(76, 175, 80, 0)',      // Transparent
             '#4caf50',                  // Green (quiet)

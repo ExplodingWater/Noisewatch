@@ -204,8 +204,8 @@ p {
 
 .report-button {
     position: absolute;
-    top: 80px;
-    right: 20px;
+    top: calc(var(--nav-height) + 8px);
+    left: 20px;
     z-index: 10;
     background-color: #FF0000;
     color: #000000;
@@ -467,22 +467,26 @@ textarea:focus {
     align-items: flex-end;
     /* pointer-events: none; Only set on button now */
 }
+/* Place report button top-left under the navbar */
 #map-controls .report-button {
     pointer-events: auto;
     margin-bottom: 8px;
     padding: 12px 22px;
     border-radius: 6px;
     font-size: 15px;
-    background: #F44336; /* match red for warning/loud */
+    background: var(--danger);
     color: #fff;
     border: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     font-weight: 700;
     cursor: pointer;
     transition: background 0.2s;
+    left: 12px;
+    top: calc(var(--nav-height) + 8px);
+    right: auto;
 }
 #map-controls .report-button:hover {
-    background: #D32F2F;
+    background: #b71c1c;
 }
 
 #heatmap-legend {
