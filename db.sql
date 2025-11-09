@@ -22,6 +22,11 @@ CREATE TABLE reports (
 
     -- 'created_at' automatically records when a report was created
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    , device_info TEXT
+    , source VARCHAR(32)
+    , accuracy_meters INTEGER
+    , audio_path TEXT
+    , severity VARCHAR(16)
 );
 
 -- Create a spatial index on the 'geom' column.

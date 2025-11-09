@@ -29,7 +29,8 @@ router.get('/maps-key', (req, res) => {
 router.get('/reports', async (req, res) => {
   try {
     const allReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time
+      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time,
+             device_info, source, accuracy_meters, audio_path, severity
       FROM reports
       ORDER BY created_at DESC;
     `;
@@ -48,8 +49,8 @@ router.get('/reports', async (req, res) => {
 router.post('/reports', async (req, res) => {
   try {
     // Log incoming request body to help diagnose client-side submission problems
-    console.log('POST /api/reports body:', req.body);
-    const { latitude, longitude, decibels, description } = req.body;
+  console.log('POST /api/reports body:', req.body);
+  const { latitude, longitude, decibels, description, device_info, source, accuracy_meters, audio_path } = req.body;
 
     // Basic validation
     if (typeof latitude === 'undefined' || typeof longitude === 'undefined' || typeof decibels === 'undefined' || !description) {
@@ -82,7 +83,7 @@ router.post('/reports', async (req, res) => {
     const MAX_DB = 200;
     storedDecibels = Math.max(MIN_DB, Math.min(MAX_DB, storedDecibels));
 
-    // Server-side: ensure coordinates are within Tirana polygon (if available)
+  // Server-side: ensure coordinates are within Tirana polygon (if available)
     const latNum = parseFloat(latitude);
     const lngNum = parseFloat(longitude);
     if (!isFinite(latNum) || !isFinite(lngNum)) {
@@ -95,13 +96,23 @@ router.post('/reports', async (req, res) => {
       }
     }
 
+    // Compute server-side severity label to keep consistency
+    let severity = 'quiet';
+    if (storedDecibels > 100) {
+      severity = 'very_high';
+    } else if (storedDecibels > 80) {
+      severity = 'loud';
+    } else if (storedDecibels > 50) {
+      severity = 'normal';
+    }
+
     const newReportQuery = `
-      INSERT INTO reports (decibels, description, geom, submitted_time)
-      VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), CURRENT_TIME)
-      RETURNING id, decibels, description, created_at, submitted_time;
+      INSERT INTO reports (decibels, description, geom, submitted_time, device_info, source, accuracy_meters, audio_path, severity)
+      VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), CURRENT_TIME, $5, $6, $7, $8, $9)
+      RETURNING id, decibels, description, created_at, submitted_time, device_info, source, accuracy_meters, audio_path, severity;
     `;
 
-    const values = [storedDecibels, description, longitude, latitude];
+    const values = [storedDecibels, description, longitude, latitude, device_info || null, source || null, (typeof accuracy_meters === 'number' ? accuracy_meters : (accuracy_meters ? parseInt(accuracy_meters) : null)), audio_path || null, severity];
     const result = await pool.query(newReportQuery, values);
 
     res.status(201).json({
