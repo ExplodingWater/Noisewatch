@@ -1,15 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const tiranaGeo = require('../data/tirana_polygon.json');
 
-// Approximate Tirana bounding box for server-side validation.
-// Keep in sync with client-side bounds in report-logic.js. Adjust if you need more precise municipal borders.
-const TIRANA_BOUNDS = {
-  MIN_LAT: 41.20,
-  MAX_LAT: 41.45,
-  MIN_LNG: 19.65,
-  MAX_LNG: 19.98
-};
+// Extract the first polygon coordinates (GeoJSON uses [lng, lat])
+const TIRANA_POLYGON = (tiranaGeo && tiranaGeo.features && tiranaGeo.features[0] && tiranaGeo.features[0].geometry && tiranaGeo.features[0].geometry.coordinates && tiranaGeo.features[0].geometry.coordinates[0]) || null;
+
+// Simple point-in-polygon (ray-casting) using arrays of [lng, lat]
+function pointInPolygon(lat, lng, polygon) {
+  if (!polygon || !Array.isArray(polygon)) return false;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][1], yi = polygon[i][0]; // convert to lat,lng
+    const xj = polygon[j][1], yj = polygon[j][0];
+
+    const intersect = ((xi > lat) !== (xj > lat)) && (lng < (yj - yi) * (lat - xi) / (xj - xi + 0.0) + yi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+// Expose API to return the maps key to the client (serves from env). Keep careful access control in production.
+router.get('/maps-key', (req, res) => {
+  res.json({ key: process.env.GOOGLE_MAPS_API_KEY || '' });
+});
 
 // GET /api/reports - Get all noise reports
 router.get('/reports', async (req, res) => {
@@ -68,14 +82,17 @@ router.post('/reports', async (req, res) => {
     const MAX_DB = 200;
     storedDecibels = Math.max(MIN_DB, Math.min(MAX_DB, storedDecibels));
 
-    // Server-side: ensure coordinates are within Tirana bounding box
+    // Server-side: ensure coordinates are within Tirana polygon (if available)
     const latNum = parseFloat(latitude);
     const lngNum = parseFloat(longitude);
     if (!isFinite(latNum) || !isFinite(lngNum)) {
       return res.status(400).json({ error: 'Invalid latitude/longitude' });
     }
-    if (!(latNum >= TIRANA_BOUNDS.MIN_LAT && latNum <= TIRANA_BOUNDS.MAX_LAT && lngNum >= TIRANA_BOUNDS.MIN_LNG && lngNum <= TIRANA_BOUNDS.MAX_LNG)) {
-      return res.status(400).json({ error: 'Location outside allowed reporting area (Tirana)' });
+    if (TIRANA_POLYGON) {
+      const inside = pointInPolygon(latNum, lngNum, TIRANA_POLYGON);
+      if (!inside) {
+        return res.status(400).json({ error: 'Location outside allowed reporting area (Tirana)' });
+      }
     }
 
     const newReportQuery = `

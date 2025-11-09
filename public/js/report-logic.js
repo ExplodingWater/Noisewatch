@@ -24,6 +24,7 @@ class NoiseReporter {
         };
         this.withinBounds = false;
         this._mapsLoaded = false;
+        this.tiranaPolygon = null;
     }
 
     initializeElements() {
@@ -187,15 +188,15 @@ class NoiseReporter {
             this.locationStatus.textContent = 'Location captured!';
             this.getLocationBtn.textContent = 'Update location';
             this.getLocationBtn.disabled = false;
-            // Render confirmation map and check bounds
+            // Load polygon and render confirmation map and check bounds
             try {
-                await this.ensureGoogleMapsLoaded();
+                await Promise.all([this.ensureGoogleMapsLoaded(), this.loadTiranaPolygon()]);
                 this.renderLocationMap(this.currentLocation.latitude, this.currentLocation.longitude);
             } catch (e) {
-                // If maps fail to load, still perform bounds check using bbox
-                console.warn('Google Maps failed to load for location preview:', e);
+                // If maps or polygon fail to load, still perform bbox check as fallback
+                console.warn('Google Maps or polygon failed to load for location preview:', e);
             }
-            this.evaluateBoundsAndUI();
+            await this.evaluateBoundsAndUI();
             this.checkFormValidity();
 
         } catch (error) {
@@ -209,26 +210,70 @@ class NoiseReporter {
     }
 
     // Load Google Maps JS dynamically (uses placeholder API key). Resolves when google.maps is available.
-    ensureGoogleMapsLoaded() {
-        if (this._mapsLoaded) return Promise.resolve();
-        return new Promise((resolve, reject) => {
-            if (window.google && window.google.maps) {
-                this._mapsLoaded = true;
-                return resolve();
-            }
+    async ensureGoogleMapsLoaded() {
+        if (this._mapsLoaded) return;
+        if (window.google && window.google.maps) {
+            this._mapsLoaded = true;
+            return;
+        }
 
+        // Fetch the maps key from the server endpoint and load Google Maps dynamically
+        try {
+            const resp = await fetch('/api/maps-key');
+            if (!resp.ok) throw new Error('Failed to fetch maps key');
+            const data = await resp.json();
+            const key = data.key || '';
             const script = document.createElement('script');
-            // NOTE: Replace YOUR_GOOGLE_MAPS_API_KEY with a real key in production or inject it from server-side env.
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=geometry';
             script.async = true;
             script.defer = true;
-            script.onload = () => {
-                this._mapsLoaded = true;
-                resolve();
-            };
-            script.onerror = (err) => reject(err || new Error('Failed to load Google Maps'));
+            script.onload = () => { this._mapsLoaded = true; };
+            script.onerror = (e) => { throw e || new Error('Failed to load Google Maps script'); };
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=geometry`;
             document.head.appendChild(script);
-        });
+            // Wait until google.maps is available
+            await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Google Maps load timeout')), 10000);
+                const check = () => {
+                    if (window.google && window.google.maps) {
+                        clearTimeout(timeout);
+                        this._mapsLoaded = true;
+                        return resolve();
+                    }
+                    setTimeout(check, 200);
+                };
+                check();
+            });
+        } catch (err) {
+            console.warn('Error loading Google Maps:', err);
+            throw err;
+        }
+    }
+
+    async loadTiranaPolygon() {
+        if (this.tiranaPolygon) return;
+        try {
+            const resp = await fetch('/data/tirana_polygon.json');
+            if (!resp.ok) throw new Error('Failed to fetch Tirana polygon');
+            const geo = await resp.json();
+            const coords = (geo && geo.features && geo.features[0] && geo.features[0].geometry && geo.features[0].geometry.coordinates && geo.features[0].geometry.coordinates[0]) || null;
+            this.tiranaPolygon = coords; // array of [lng, lat]
+        } catch (e) {
+            console.warn('Could not load Tirana polygon:', e);
+            this.tiranaPolygon = null;
+        }
+    }
+
+    // Ray-casting algorithm for point-in-polygon (client side). polygon is array of [lng, lat]
+    pointInPolygon(lat, lng, polygon) {
+        if (!polygon || !Array.isArray(polygon)) return false;
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i][1], yi = polygon[i][0];
+            const xj = polygon[j][1], yj = polygon[j][0];
+            const intersect = ((xi > lat) !== (xj > lat)) && (lng < (yj - yi) * (lat - xi) / (xj - xi + 0.0) + yi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 
     renderLocationMap(lat, lng) {
@@ -248,12 +293,17 @@ class NoiseReporter {
         }
     }
 
-    evaluateBoundsAndUI() {
+    async evaluateBoundsAndUI() {
         if (!this.currentLocation) return;
         const lat = this.currentLocation.latitude;
         const lng = this.currentLocation.longitude;
-        const b = this.TIRANA_BOUNDS;
-        const inside = (lat >= b.MIN_LAT && lat <= b.MAX_LAT && lng >= b.MIN_LNG && lng <= b.MAX_LNG);
+        let inside = false;
+        if (this.tiranaPolygon) {
+            inside = this.pointInPolygon(lat, lng, this.tiranaPolygon);
+        } else {
+            const b = this.TIRANA_BOUNDS;
+            inside = (lat >= b.MIN_LAT && lat <= b.MAX_LAT && lng >= b.MIN_LNG && lng <= b.MAX_LNG);
+        }
         this.withinBounds = inside;
         if (!inside) {
             // Grey out submit and show message

@@ -15,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
+// Serve data files (GeoJSON, etc.)
+app.use('/data', express.static(path.join(__dirname, 'data')));
 
 // Routes
 app.use('/api', require('./routes/api'));
