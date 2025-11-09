@@ -153,9 +153,13 @@ async function fetchReportsAndDrawHeatmap(map) {
                         const parts = [];
                         parts.push(`<strong>Avg: ${Math.round(avgDb)} dB</strong> — ${reportCount} report(s)`);
                         const reportLines = cl.reports.slice(0,5).map(r => {
-                            const time = r.submitted_time || new Date(r.created_at).toLocaleTimeString();
+                            // Prefer submitted_time (HH:MM:SS) returned by the server; fall back to created_at timestamp.
+                            const created = r.created_at ? new Date(r.created_at) : null;
+                            const dateStr = created ? created.toLocaleDateString() : '';
+                            const timeStr = r.submitted_time || (created ? created.toLocaleTimeString() : '');
+                            const dbStr = (typeof r.decibels !== 'undefined' && r.decibels !== null) ? `${Math.round(r.decibels)} dB` : '';
                             const desc = (r.description || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-                            return `<div style="margin-top:6px;"><small><strong>${time}</strong></small><div>${desc}</div></div>`;
+                            return `<div style="margin-top:6px;"><small>${dateStr} ${timeStr} — <strong>${dbStr}</strong></small><div>${desc}</div></div>`;
                         });
                         parts.push(reportLines.join(''));
                         const content = `<div style="max-width:280px">${parts.join('')}</div>`;

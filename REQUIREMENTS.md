@@ -77,6 +77,38 @@ Notes:
 - If your Postgres is on another host, set `DB_HOST` accordingly.
 - `DB_CALIB_OFFSET` is applied server-side when incoming decibel values are negative (dBFS). Tweak as needed.
 
+Maps API key and `/api/maps-key` endpoint
+----------------------------------------
+
+- `GOOGLE_MAPS_API_KEY` should be set in the server environment (or in your `.env`) when you want map functionality. The app exposes a small endpoint at `/api/maps-key` that returns the key to the client so the browser can load the Google Maps JavaScript API. Example in `.env`:
+
+```text
+GOOGLE_MAPS_API_KEY=AIza...your_key_here
+```
+
+- Security note: this key is used client-side, so restrict it in the Google Cloud Console by HTTP referrers (your domains and development tunnels like `https://*.ngrok.io`). Do NOT use an unrestricted key in production.
+
+- On startup, ensure the key is present in your environment. If the key is empty the map loader will still run but map tiles/functionality will be limited or fail.
+
+Tirana polygon and server-side validation
+----------------------------------------
+
+- The project includes `data/tirana_polygon.json` (an approximate GeoJSON polygon for Tirana). The client loads this polygon to validate whether a user's reported point is inside the allowed area. The server also loads the same file and runs a point-in-polygon check before accepting reports.
+
+- If you wish to replace the polygon with an authoritative municipal boundary, replace `data/tirana_polygon.json` with your GeoJSON (keep the same feature/geometry structure). No code changes are required.
+
+Database migration note (existing DBs)
+------------------------------------
+
+If you are upgrading an existing database to the latest schema, add the `submitted_time` column (used to store HH:MM:SS submission time) with this SQL:
+
+```sql
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS submitted_time TIME WITHOUT TIME ZONE DEFAULT (CURRENT_TIME);
+```
+
+Run that command against your `noisewatch` database once (via `psql` or your DB client). The application now INSERTs `submitted_time` on new reports and also returns it in API responses.
+
+
 ## HTTPS / Mobile testing
 
 - iOS Safari requires secure context for microphone access. Use one of the following:
