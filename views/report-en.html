@@ -9,14 +9,35 @@
 <body>
     <nav>
         <a class="logo" href="/en" style="pointer-events: none;"></a>
-        <a href="/en">Home</a>
-        <a href="/en/about">About Us</a>
-        <a href="/en/services">Services</a>
-        <a href="/en/map">Map</a>
-        <a href="/en/report">Report</a>
-        <a class="al" href="/report" title="Albanian"></a>
-        <a class="en" href="/en/report" title="English"></a>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/en">Home</a>
+            <a href="/en/about">About Us</a>
+            <a href="/en/services">Services</a>
+            <a href="/en/map">Map</a>
+            <a href="/en/report">Report</a>
+            <a class="al" href="/report" title="Albanian"></a>
+            <a class="en" href="/en/report" title="English"></a>
+        </div>
     </nav>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
 
     <main class="report-container">
         <div class="report-form">

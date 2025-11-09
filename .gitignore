@@ -31,3 +31,18 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Documentation and setup guides (exclude from deployment)
+DEPLOYMENT.md
+HOSTINGER_DEPLOYMENT_GUIDE.md
+HOSTINGER_MYSQL_SUMMARY.md
+MYSQL_SETUP_STEPS.md
+MYSQL_MIGRATION_GUIDE.md
+REQUIREMENTS.md
+
+# Backup files
+*.backup.js
+config/database.postgres.backup.js
+routes/api.postgres.backup.js
+config/database.mysql.js
+routes/api.mysql.js

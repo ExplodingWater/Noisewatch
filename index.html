@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noisewatch - Loading...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        .loader {
+            text-align: center;
+            color: white;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 {
+            font-size: 2em;
+            margin: 0 0 10px 0;
+        }
+        p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <h1>Noisewatch</h1>
+        <p>Loading application...</p>
+    </div>
+    <script>
+        // Check if Node.js app is running on port 3000
+        fetch('http://localhost:3000/health')
+            .then(response => {
+                if (response.ok) {
+                    // App is running, redirect to it
+                    window.location.href = 'http://localhost:3000';
+                } else {
+                    throw new Error('App not responding');
+                }
+            })
+            .catch(error => {
+                // If app is not running, show error
+                document.querySelector('.loader').innerHTML = `
+                    <h1>⚠️ Application Not Running</h1>
+                    <p>The Noisewatch server is currently offline.</p>
+                    <p style="font-size: 0.9em; margin-top: 20px;">Please contact the administrator.</p>
+                `;
+            });
+    </script>
+</body>
+</html>
+

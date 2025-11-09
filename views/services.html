@@ -9,14 +9,35 @@
 <body>
     <nav>
         <a class="logo" href="/" style="pointer-events: none;"></a>
-        <a href="/">Kreu</a>
-        <a href="/about">Rreth Nesh</a>
-        <a href="/services">Shërbimet</a>
-        <a href="/map">Harta</a>
-        <a href="/report">Raporto</a>
-        <a class="al" href="/services" title="Shqip"></a>
-        <a class="en" href="/en/services" title="English"></a>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="/">Kreu</a>
+            <a href="/about">Rreth Nesh</a>
+            <a href="/services">Shërbimet</a>
+            <a href="/map">Harta</a>
+            <a href="/report">Raporto</a>
+            <a class="al" href="/services" title="Shqip"></a>
+            <a class="en" href="/en/services" title="English"></a>
+        </div>
     </nav>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
 
     <section id="services">
         <h1>Shërbimet Tona</h1>
