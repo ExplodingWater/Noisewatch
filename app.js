@@ -52,6 +52,14 @@ app.listen(PORT, () => {
   console.log(`🚀 Noisewatch server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Access the app at: http://localhost:${PORT}`);
+  // Check Google Maps API key availability and warn if missing or likely misconfigured
+  const mapsKey = process.env.GOOGLE_MAPS_API_KEY || '';
+  if (!mapsKey) {
+    console.warn('⚠️  GOOGLE_MAPS_API_KEY is not set. The map may show a "For development purposes only" overlay or fail to load.');
+  } else if (process.env.NODE_ENV === 'production') {
+    // In production, remind to ensure billing and API restrictions are correct
+    console.log('🔑 GOOGLE_MAPS_API_KEY detected. Ensure the key has Billing enabled and Maps JavaScript API is allowed for your production domain to avoid "For development purposes only" overlays.');
+  }
 });
 
 module.exports = app;
