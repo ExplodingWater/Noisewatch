@@ -593,9 +593,14 @@ textarea:focus {
     }
 
     nav {
-        justify-content: space-between;
-        padding: 1vh 0;
-        position: fixed;
+    display: flex;
+    padding: 1vh 5px;
+    position: fixed;
+    display: flex;
+    width: 75%;
+    height: 10vh;
+        
+
     }
 
     /* Hide nav links by default on mobile */

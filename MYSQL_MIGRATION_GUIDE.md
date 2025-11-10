@@ -247,7 +247,7 @@ async function testConnection() {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       port: process.env.DB_PORT || 3306
-    });
+    });/usr/bin/which: no nginx in (/home/u734807911/.nvm/versions/node/v24.11.0/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/golang/1.22.0/bin:/opt/go/bin)
     
     console.log('✅ Connected to MySQL!');
     

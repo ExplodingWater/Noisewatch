@@ -24,7 +24,7 @@ CREATE TABLE reports (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     , device_info TEXT
     , source VARCHAR(32)
-    , accuracy_meters INTEGER
+    , accuracy_meters INTEGERz
     , audio_path TEXT
     , severity VARCHAR(16)
 );
