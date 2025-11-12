@@ -3,137 +3,143 @@ const router = express.Router();
 const pool = require('../config/database');
 const tiranaGeo = require('../data/tirana_polygon.json');
 
-// Extract the first polygon coordinates (GeoJSON uses [lng, lat])
-const TIRANA_POLYGON = (tiranaGeo && tiranaGeo.features && tiranaGeo.features[0] && tiranaGeo.features[0].geometry && tiranaGeo.features[0].geometry.coordinates && tiranaGeo.features[0].geometry.coordinates[0]) || null;
+// Extract Tirana polygon (GeoJSON uses [lng, lat])
+const TIRANA_POLYGON =
+  tiranaGeo?.features?.[0]?.geometry?.coordinates?.[0] || null;
 
-// Simple point-in-polygon (ray-casting) using arrays of [lng, lat]
+// Ray-casting algorithm for point-in-polygon
 function pointInPolygon(lat, lng, polygon) {
   if (!polygon || !Array.isArray(polygon)) return false;
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][1], yi = polygon[i][0]; // convert to lat,lng
+    const xi = polygon[i][1], yi = polygon[i][0];
     const xj = polygon[j][1], yj = polygon[j][0];
-
-    const intersect = ((xi > lat) !== (xj > lat)) && (lng < (yj - yi) * (lat - xi) / (xj - xi + 0.0) + yi);
+    const intersect = ((xi > lat) !== (xj > lat)) &&
+      (lng < ((yj - yi) * (lat - xi)) / (xj - xi + 0.0) + yi);
     if (intersect) inside = !inside;
   }
   return inside;
 }
 
-// Expose API to return the maps key to the client (serves from env). Keep careful access control in production.
+// Maps API key endpoint
 router.get('/maps-key', (req, res) => {
-  // Also return optional Map ID for vector maps / advanced features
   res.json({
     key: process.env.GOOGLE_MAPS_API_KEY || '',
     mapId: process.env.GOOGLE_MAPS_MAP_ID || ''
   });
 });
 
-// GET /api/reports - Get all noise reports
+// GET all reports
 router.get('/reports', async (req, res) => {
   try {
-    const allReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time,
+    const result = await pool.query(`
+      SELECT id, decibels, description,
+             ST_X(geom) AS longitude, ST_Y(geom) AS latitude,
+             created_at, submitted_time,
              device_info, source, accuracy_meters, audio_path, severity
       FROM reports
       ORDER BY created_at DESC;
-    `;
-
-    const result = await pool.query(allReportsQuery);
-    console.log(`GET /api/reports -> returned ${result.rows.length} rows`);
+    `);
+    console.log(`GET /api/reports -> ${result.rows.length} rows`);
     res.json(result.rows);
   } catch (err) {
-    // Log full error for debugging
-    console.error('Error fetching reports:', err.stack || err);
-    res.status(500).json({ error: 'Server Error', ...(process.env.NODE_ENV === 'development' && { details: err.message }) });
+    console.error('Error fetching reports:', err);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
-// POST /api/reports - Create a new noise report
+// POST new report
 router.post('/reports', async (req, res) => {
   try {
-    // Log incoming request body to help diagnose client-side submission problems
-  console.log('POST /api/reports body:', req.body);
-  const { latitude, longitude, decibels, description, device_info, source, accuracy_meters, audio_path } = req.body;
+    console.log('POST /api/reports body:', req.body);
 
-    // Basic validation
-    if (typeof latitude === 'undefined' || typeof longitude === 'undefined' || typeof decibels === 'undefined' || !description) {
-      return res.status(400).json({ error: 'Please provide all required fields' });
+    const {
+      latitude,
+      longitude,
+      decibels,
+      description,
+      device_info,
+      source,
+      accuracy_meters,
+      audio_path
+    } = req.body;
+
+    // Validate input
+    if (
+      latitude == null ||
+      longitude == null ||
+      decibels == null ||
+      !description
+    ) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (typeof decibels !== 'number' || !isFinite(decibels)) {
-      return res.status(400).json({ error: 'Decibels must be a valid number' });
+    const latNum = parseFloat(latitude);
+    const lngNum = parseFloat(longitude);
+    let dbValue = parseFloat(decibels);
+
+    if (!isFinite(latNum) || !isFinite(lngNum) || !isFinite(dbValue)) {
+      return res.status(400).json({ error: 'Invalid numeric fields' });
     }
 
     if (description.length > 255) {
-      return res.status(400).json({ error: 'Description must be 255 characters or less' });
+      return res.status(400).json({ error: 'Description too long' });
     }
 
-    // Calibrate client-side measurements if they arrived as negative dBFS
-    // Some devices report negative dB (dBFS). Allow negative values and map
-    // them into an approximate SPL-like positive range using an offset.
-    const CLIENT_NEGATIVE_THRESHOLD = -1; // if decibels <= this, treat as dBFS
-  const CALIB_OFFSET = parseFloat(process.env.DB_CALIB_OFFSET) || 115; // configurable via env (lowered slightly)
+    // Calibrate dB if negative (dBFS → SPL approximation)
+    const CLIENT_NEGATIVE_THRESHOLD = -1;
+    const CALIB_OFFSET = parseFloat(process.env.DB_CALIB_OFFSET) || 115;
+    if (dbValue <= CLIENT_NEGATIVE_THRESHOLD) dbValue += CALIB_OFFSET;
 
-    let storedDecibels = Math.round(decibels);
+    dbValue = Math.round(Math.min(200, Math.max(0, dbValue)));
 
-    if (storedDecibels <= CLIENT_NEGATIVE_THRESHOLD) {
-      // Treat as a dBFS measurement and add offset to approximate SPL
-      storedDecibels = Math.round(storedDecibels + CALIB_OFFSET);
+    // Check Tirana area restriction
+    if (TIRANA_POLYGON && !pointInPolygon(latNum, lngNum, TIRANA_POLYGON)) {
+      return res.status(400).json({ error: 'Location outside Tirana area' });
     }
 
-    // Final clamp to database-acceptable range
-    const MIN_DB = 0;
-    const MAX_DB = 200;
-    storedDecibels = Math.max(MIN_DB, Math.min(MAX_DB, storedDecibels));
-
-  // Server-side: ensure coordinates are within Tirana polygon (if available)
-    const latNum = parseFloat(latitude);
-    const lngNum = parseFloat(longitude);
-    if (!isFinite(latNum) || !isFinite(lngNum)) {
-      return res.status(400).json({ error: 'Invalid latitude/longitude' });
-    }
-    if (TIRANA_POLYGON) {
-      const inside = pointInPolygon(latNum, lngNum, TIRANA_POLYGON);
-      if (!inside) {
-        return res.status(400).json({ error: 'Location outside allowed reporting area (Tirana)' });
-      }
-    }
-
-    // Compute server-side severity label to keep consistency
+    // Severity
     let severity = 'quiet';
-    if (storedDecibels > 100) {
-      severity = 'very_high';
-    } else if (storedDecibels > 80) {
-      severity = 'loud';
-    } else if (storedDecibels > 50) {
-      severity = 'normal';
-    }
+    if (dbValue > 100) severity = 'very_high';
+    else if (dbValue > 80) severity = 'loud';
+    else if (dbValue > 50) severity = 'normal';
 
-    const newReportQuery = `
-      INSERT INTO reports (decibels, description, geom, submitted_time, device_info, source, accuracy_meters, audio_path, severity)
-      VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326), CURRENT_TIME, $5, $6, $7, $8, $9)
-      RETURNING id, decibels, description, created_at, submitted_time, device_info, source, accuracy_meters, audio_path, severity;
+    const query = `
+      INSERT INTO reports
+        (decibels, description, geom, submitted_time,
+         device_info, source, accuracy_meters, audio_path, severity)
+      VALUES
+        ($1, $2, ST_SetSRID(ST_MakePoint($3, $4), 4326),
+         CURRENT_TIME, $5, $6, $7, $8, $9)
+      RETURNING id, decibels, description, created_at, submitted_time,
+                device_info, source, accuracy_meters, audio_path, severity;
     `;
 
-    const values = [storedDecibels, description, longitude, latitude, device_info || null, source || null, (typeof accuracy_meters === 'number' ? accuracy_meters : (accuracy_meters ? parseInt(accuracy_meters) : null)), audio_path || null, severity];
-    const result = await pool.query(newReportQuery, values);
+    const values = [
+      dbValue,
+      description,
+      lngNum,
+      latNum,
+      device_info || null,
+      source || null,
+      accuracy_meters ? parseInt(accuracy_meters) : null,
+      audio_path || null,
+      severity
+    ];
 
-    res.status(201).json({
-      success: true,
-      data: result.rows[0]
-    });
+    const result = await pool.query(query, values);
+
+    res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
-    // Log full error stack for debugging
     console.error('Error creating report:', err.stack || err);
-    res.status(500).json({ error: 'Server Error', ...(process.env.NODE_ENV === 'development' && { details: err.message }) });
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
-// GET /api/reports/stats - Get noise statistics
+// Noise statistics
 router.get('/reports/stats', async (req, res) => {
   try {
-    const statsQuery = `
+    const result = await pool.query(`
       SELECT 
         COUNT(*) as total_reports,
         AVG(decibels) as average_decibels,
@@ -144,9 +150,7 @@ router.get('/reports/stats', async (req, res) => {
         COUNT(CASE WHEN decibels BETWEEN 81 AND 100 THEN 1 END) as high_reports,
         COUNT(CASE WHEN decibels > 100 THEN 1 END) as very_high_reports
       FROM reports;
-    `;
-
-    const result = await pool.query(statsQuery);
+    `);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching stats:', err.message);
@@ -154,20 +158,18 @@ router.get('/reports/stats', async (req, res) => {
   }
 });
 
-// GET /api/reports/recent - Get recent reports (last 24 hours)
+// Recent reports
 router.get('/reports/recent', async (req, res) => {
   try {
-    const recentReportsQuery = `
-      SELECT id, decibels, description, ST_X(geom) AS longitude, ST_Y(geom) AS latitude, created_at, submitted_time,
+    const result = await pool.query(`
+      SELECT id, decibels, description,
+             ST_X(geom) AS longitude, ST_Y(geom) AS latitude,
+             created_at, submitted_time,
              device_info, source, accuracy_meters, audio_path, severity
       FROM reports
       WHERE created_at >= NOW() - INTERVAL '24 hours'
       ORDER BY created_at DESC;
-    `;
-
-    // Note: include submitted_time for client display if present
-
-    const result = await pool.query(recentReportsQuery);
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching recent reports:', err.message);
