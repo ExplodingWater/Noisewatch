@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/database');
 const tiranaGeo = require('../data/tirana_polygon.json');
 
 // Extract Tirana polygon (GeoJSON uses [lng, lat])
@@ -31,6 +30,7 @@ router.get('/maps-key', (req, res) => {
 
 // GET all reports
 router.get('/reports', async (req, res) => {
+  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT id, decibels, description,
@@ -50,6 +50,7 @@ router.get('/reports', async (req, res) => {
 
 // POST new report
 router.post('/reports', async (req, res) => {
+  const pool = req.pool;
   try {
     console.log('POST /api/reports body:', req.body);
 
@@ -64,7 +65,6 @@ router.post('/reports', async (req, res) => {
       audio_path
     } = req.body;
 
-    // Validate input
     if (
       latitude == null ||
       longitude == null ||
@@ -86,19 +86,16 @@ router.post('/reports', async (req, res) => {
       return res.status(400).json({ error: 'Description too long' });
     }
 
-    // Calibrate dB if negative (dBFS → SPL approximation)
     const CLIENT_NEGATIVE_THRESHOLD = -1;
     const CALIB_OFFSET = parseFloat(process.env.DB_CALIB_OFFSET) || 115;
     if (dbValue <= CLIENT_NEGATIVE_THRESHOLD) dbValue += CALIB_OFFSET;
 
     dbValue = Math.round(Math.min(200, Math.max(0, dbValue)));
 
-    // Check Tirana area restriction
     if (TIRANA_POLYGON && !pointInPolygon(latNum, lngNum, TIRANA_POLYGON)) {
       return res.status(400).json({ error: 'Location outside Tirana area' });
     }
 
-    // Severity
     let severity = 'quiet';
     if (dbValue > 100) severity = 'very_high';
     else if (dbValue > 80) severity = 'loud';
@@ -138,6 +135,7 @@ router.post('/reports', async (req, res) => {
 
 // Noise statistics
 router.get('/reports/stats', async (req, res) => {
+  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT 
@@ -160,6 +158,7 @@ router.get('/reports/stats', async (req, res) => {
 
 // Recent reports
 router.get('/reports/recent', async (req, res) => {
+  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT id, decibels, description,
