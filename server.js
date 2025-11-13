@@ -36,7 +36,6 @@ app.get(['/report', '/report/'], serve('report.html'));
 // Import API routes and inject pool
 const apiRouter = require('./routes/api');
 app.use('/api', (req, res, next) => {
-  req.pool = pool;
   next();
 }, apiRouter);
 
