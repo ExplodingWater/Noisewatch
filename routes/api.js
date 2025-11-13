@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const tiranaGeo = require('../data/tirana_polygon.json');
+const pool = require('../config/database'); // add this line
 
 // Extract Tirana polygon (GeoJSON uses [lng, lat])
 const TIRANA_POLYGON =
@@ -30,7 +31,6 @@ router.get('/maps-key', (req, res) => {
 
 // GET all reports
 router.get('/reports', async (req, res) => {
-  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT id, decibels, description,
@@ -50,7 +50,6 @@ router.get('/reports', async (req, res) => {
 
 // POST new report
 router.post('/reports', async (req, res) => {
-  const pool = req.pool;
   try {
     console.log('POST /api/reports body:', req.body);
 
@@ -135,7 +134,6 @@ router.post('/reports', async (req, res) => {
 
 // Noise statistics
 router.get('/reports/stats', async (req, res) => {
-  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT 
@@ -158,7 +156,6 @@ router.get('/reports/stats', async (req, res) => {
 
 // Recent reports
 router.get('/reports/recent', async (req, res) => {
-  const pool = req.pool;
   try {
     const result = await pool.query(`
       SELECT id, decibels, description,
