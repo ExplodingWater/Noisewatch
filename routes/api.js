@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const tiranaGeo = require('../data/tirana_polygon.json');
-const pool = require('../config/database'); // add this line
+const pool = require('../config/database.js'); // add this line
 
 // Extract Tirana polygon (GeoJSON uses [lng, lat])
 const TIRANA_POLYGON =
