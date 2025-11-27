@@ -4,162 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Shërbimet - Noisewatch Tirana</title>
+    <link rel="manifest" href="/manifest.json">
+    <title>Shërbimet - Noisewatch</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="nav-links" id="navLinks">
-            <a href="/">Kreu</a>
-            <a href="/about">Rreth Nesh</a>
-            <a href="/services">Shërbimet</a>
-            <a href="/map">Harta</a>
-            <a href="/report">Raporto</a>
-            <a class="al" href="/services" title="Shqip"></a>
-            <a class="en" href="/en/services" title="English"></a>
+        <a href="/" class="logo" aria-label="Kreu"></a>
+        
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="/" class="nav-item">Kreu</a>
+                <a href="/about" class="nav-item">Rreth Nesh</a>
+                <a href="/services" class="nav-item active">Shërbimet</a>
+                <a href="/map" class="nav-item">Harta</a>
+                <a href="/report" class="nav-item">Raporto</a>
+            </div>
+
+            <button class="menu-btn" id="menuToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div class="menu-dropdown" id="menuDropdown">
+            <div class="mobile-links">
+                <a href="/">Kreu</a>
+                <a href="/about">Rreth Nesh</a>
+                <a href="/services">Shërbimet</a>
+                <a href="/map">Harta</a>
+                <a href="/report">Raporto</a>
+                <div class="menu-divider"></div>
+            </div>
+
+            <div class="theme-switcher">
+                <button class="theme-opt-btn" data-theme="light" aria-label="Light Mode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
+                <button class="theme-opt-btn" data-theme="system" aria-label="System Default">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </button>
+                <button class="theme-opt-btn" data-theme="dark" aria-label="Dark Mode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+
+            <div class="menu-divider"></div>
+
+            <div class="lang-options">
+                <a href="/services" class="lang-btn"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/services-en" class="lang-btn" style="opacity:0.6"><div class="lang-flag flag-en"></div> Eng</a>
+            </div>
         </div>
     </nav>
+
+    <main class="main-container">
+        <div class="content-wrapper">
+            <h1 class="page-title">Shërbimet Tona</h1>
+            <div class="divider"></div>
+            
+            <div class="section-text">
+                <p style="margin-bottom:30px;">
+                    Platforma jonë u jep mundësinë të gjithëve të marrin pjesë në monitorimin e zhurmës në Tiranë.
+                    Nëpërmjet hartës interaktive, ju mund të shihni nivelin e zhurmës në kohë reale.
+                </p>
+
+                <div style="background: var(--bg-card); padding: 30px; border-radius: 16px; border: 1px solid var(--border); margin-top: 40px; text-align: left;">
+                    <h3 style="margin-bottom: 20px; font-size: 1.2rem; color: var(--text-main);">Kodi i Ngjyrave</h3>
+                    <div style="display: grid; gap: 15px; font-weight: 500;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟩</span>
+                            <div><span style="color: #4CAF50; font-weight:bold;">E gjelbër</span> <span style="opacity:0.7">(< 50dB)</span> — Zona të qeta, ideale për pushim.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟨</span>
+                            <div><span style="color: #FFC107; font-weight:bold;">E verdhë</span> <span style="opacity:0.7">(51-80dB)</span> — Zhurmë mesatare, e tolerueshme.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟧</span>
+                            <div><span style="color: #FF9800; font-weight:bold;">Portokalli</span> <span style="opacity:0.7">(81-100dB)</span> — Zhurmë e lartë që kërkon kujdes.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟥</span>
+                            <div><span style="color: #F44336; font-weight:bold;">E kuqe</span> <span style="opacity:0.7">(> 100dB)</span> — Zhurmë shumë e lartë dhe e dëmshme.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 50px; text-align: center;">
+                    <a href="/report" class="action-btn btn-solid">Raporto Tani</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="partner-logos">
+            <img src="/images/ALBICT logo.png" alt="ALBICT">
+            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
+            <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
+        </div>
+        <p style="font-size: 0.8rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+    </footer>
+
     <script>
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
+        const menuBtn = document.getElementById('menuToggle');
+        const menuDropdown = document.getElementById('menuDropdown');
+        menuBtn.addEventListener('click', () => {
+            menuDropdown.classList.toggle('open');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
+        document.addEventListener('click', (e) => {
+            if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+                menuDropdown.classList.remove('open');
+            }
         });
     </script>
-
-    <section id="services">
-        <h1>Shërbimet Tona</h1>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Platforma jonë u jep mundësinë të gjithëve të marrin pjesë në monitorimin e zhurmës në Tiranë.
-            Nëpërmjet hartës interaktive, ju mund të shihni nivelin e zhurmës në çdo zonë të qytetit.
-        </p>
-    </section>
-
-    <section id="noise-monitoring">
-        <h2>Monitorimi i Zhurmës</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Ofrojmë monitorim në kohë reale të nivelit të zhurmës në të gjitha zonat e Tiranës:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>🟩 Zona të Qeta:</strong> Nivele zhurme nën 50 dB - ideale për pushim dhe shëtitje</li>
-            <li><strong>🟨 Zhurmë Normale:</strong> Nivele 51-80 dB - të tolerueshme për aktivitete normale</li>
-              <li><strong>🟧 Zhurmë e Lartë:</strong> Nivele 81-100 dB - kërkojnë kujdes dhe mund të prekin shëndetin</li>
-              <li><strong>🟥 Zhurmë Shumë e Lartë:</strong> Nivele mbi 100 dB - të dëmshme për shëndetin dhe kërkojnë veprim të menjëhershëm</li>
-        </ul>
-    </section>
-
-    <section id="interactive-map">
-        <h2>Harta Interaktive</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Harta jonë interaktive ju lejon të:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li>Shihni nivelin e zhurmës në çdo zonë të qytetit në kohë reale</li>
-            <li>Klikoni mbi një vend për të parë detajet e matjes</li>
-            <li>Shihni kohën e matjes, burimin e zhurmës dhe intensitetin në decibel</li>
-            <li>Lexoni raportimet e banorëve për zhurmën në atë zonë</li>
-            <li>Identifikoni zonat më problematike dhe më të qeta të qytetit</li>
-        </ul>
-    </section>
-
-    <section id="noise-reporting">
-        <h2>Raportimi i Zhurmës</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Çdokush mund të kontribuojë në monitorimin e zhurmës duke:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Regjistrim Audio:</strong> Matja e saktë e zhurmës përmes mikrofonit të pajisjes suaj</li>
-            <li><strong>Përshkrim i Detajuar:</strong> Informacione për burimin dhe natyrën e zhurmës</li>
-            <li><strong>Vendndodhja e Saktë:</strong> Përdorimi i GPS për vendndodhje të precize</li>
-            <li><strong>Raportim Anonim:</strong> Mbrojtja e privatësisë suaj gjatë raportimit</li>
-        </ul>
-        <p>
-            Sa më shumë raportime të kemi, aq më e saktë bëhet harta jonë dhe aq më efektive janë zgjidhjet.
-        </p>
-    </section>
-
-    <section id="data-analysis">
-        <h2>Analiza e të Dhënave</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Ofrojmë analiza të detajuara të të dhënave për:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Trendet e Zhurmës:</strong> Ndryshimet në nivelet e zhurmës me kalimin e kohës</li>
-            <li><strong>Zonat Problem:</strong> Identifikimi i zonave me probleme më të mëdha</li>
-            <li><strong>Orët e Pikut:</strong> Kur zhurma është më e lartë gjatë ditës</li>
-            <li><strong>Burimet Kryesore:</strong> Analiza e burimeve më të rëndësishme të zhurmës</li>
-            <li><strong>Raportet Periodike:</strong> Përmbledhje mujore dhe vjetore të të dhënave</li>
-        </ul>
-    </section>
-
-    <section id="community-engagement">
-        <h2>Angazhimi i Komunitetit</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Ne besojmë në fuqinë e komunitetit për të krijuar ndryshime pozitive:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Workshop dhe Trajnime:</strong> Edukim për ndikimin e zhurmës në shëndet</li>
-            <li><strong>Kampanja të Ndërgjegjësimit:</strong> Informim për rëndësinë e qetësisë</li>
-            <li><strong>Bashkëpunim me Autoritetet:</strong> Përmirësimi i politikave urbane</li>
-            <li><strong>Iniciativa Lokale:</strong> Mbështetje për projekte komunitare</li>
-            <li><strong>Fornimi i të Dhënave:</strong> Të dhëna të hapura për kërkime dhe analiza</li>
-        </ul>
-    </section>
-
-    <section id="technical-support">
-        <h2>Mbështetja Teknike</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Ofrojmë mbështetje teknike për:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Përdorimi i Platformës:</strong> Udhëzime për përdorimin e të gjitha funksioneve</li>
-            <li><strong>Probleme Teknike:</strong> Zgjidhja e problemeve me regjistrimin dhe raportimin</li>
-            <li><strong>Integrimi i API:</strong> Për zhvillues që duan të integrojnë të dhënat tona</li>
-            <li><strong>Trajnime:</strong> Sesione trajnimi për organizata dhe institucione</li>
-        </ul>
-    </section>
-
-    <section id="contact">
-        <h2>Kontakto për Shërbime</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Për më shumë informacion rreth shërbimeve tona ose për të kërkuar mbështetje:
-        </p>
-        <p>
-            📧 Email: services@noisewatch.al<br>
-            📞 Telefon: +355 XX XXX XXXX<br>
-            📍 Adresa: Tirana, Albania<br>
-            🌐 Website: www.noisewatch.al
-        </p>
-    </section>
-
-    <section id="footer">
-        <h2 class="footer-title">Bashkëpunëtorët</h2>
-        <div class="images">
-            <img class="albict" src="/images/ALBICT logo.png" alt="">
-            <img class="bashkia" src="/images/Bashkia Tirane.png" alt="">
-            <img class="climate" src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="">
-        </div>
-    </section>
-
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
 </body>
 </html>

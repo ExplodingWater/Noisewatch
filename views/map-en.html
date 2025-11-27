@@ -2,28 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#003366">
     <title>Map - Noisewatch Tirana</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/en" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <a class="logo" href="/en" aria-label="Home"></a>
         <div class="nav-links" id="navLinks">
-            <a href="/en">Home</a>
-            <a href="/en/about">About Us</a>
-            <a href="/en/services">Services</a>
-            <a href="/en/map">Map</a>
-            <a href="/en/report">Report</a>
-            <a class="al" href="/map" title="Albanian"></a>
-            <a class="en" href="/en/map" title="English"></a>
+            <a href="/en" class="nav-item">Home</a>
+            <a href="/about-en" class="nav-item">About Us</a>
+            <a href="/services-en" class="nav-item">Services</a>
+            <a href="/map-en" class="nav-item active">Map</a>
+            <a href="/report-en" class="nav-item">Report</a>
+            <div class="nav-controls">
+                <button class="theme-btn" id="themeToggle">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                </button>
+                <a class="lang-icon al-icon" href="/map"></a>
+                <a class="lang-icon en-icon active" href="/map-en"></a>
+            </div>
         </div>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
     </nav>
+
+    <main class="map-container">
+        <div id="googleMap"></div>
+        
+        <div id="heatmap-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#4caf50"></span> <50 dB</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ffc107"></span> 51-80 dB</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#ff9800"></span> 81-100 dB</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f44336"></span> >100 dB</div>
+        </div>
+    </main>
+
+    <!-- Cluster Modal -->
+    <div id="clusterModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+        <div class="report-card" style="width:90%; max-width:500px; max-height:70vh; overflow-y:auto; margin-top:100px;">
+            <div style="display:flex;justify-content:space-between;align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:15px; margin-bottom:15px;">
+                <h3 id="clusterModalTitle" style="margin:0; color:var(--text-main);">Reports</h3>
+                <button id="clusterModalClose" style="background:none;border:none;font-size:28px;cursor:pointer;color:var(--text-main);">&times;</button>
+            </div>
+            <div id="clusterModalBody"></div>
+        </div>
+    </div>
+
     <script>
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
@@ -31,45 +57,16 @@
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
+        // Modal flex helper
+        const modal = document.getElementById('clusterModal');
+        const observer = new MutationObserver(() => {
+            if(modal.style.display === 'block') modal.style.display = 'flex';
         });
+        observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
     </script>
-
-    <main class="map-container">
-        <div id="googleMap"></div>
-                <div id="map-controls">
-                        <button class="report-button" onclick="window.location.href='/en/report'">Report Commotion</button>
-                </div>
-                                <div id="heatmap-legend" aria-label="Heatmap legend">
-                                    <span class="legend-dot" style="background:#4caf50"></span>
-                                    <span class="legend-label">Quiet zones: under 50 dB</span>
-                                    <span class="legend-dot" style="background:#ffc107"></span>
-                                    <span class="legend-label">Normal noise: 51-80 dB</span>
-                                    <span class="legend-dot" style="background:#ff9800"></span>
-                                    <span class="legend-label">High noise: 81-100 dB</span>
-                                    <span class="legend-dot" style="background:#f44336"></span>
-                                    <span class="legend-label">Very high noise: above 100 dB</span>
-                                </div>
-    </main>
-
-    <!-- Cluster details modal -->
-    <div id="clusterModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.4);">
-        <div style="background:#fff; max-width:720px; margin:60px auto; padding:16px; border-radius:6px; box-shadow:0 6px 24px rgba(0,0,0,0.2);">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h3 id="clusterModalTitle" style="margin:0;font-size:18px">Cluster details</h3>
-                <button id="clusterModalClose" style="background:none;border:none;font-size:18px;cursor:pointer;">✕</button>
-            </div>
-            <div id="clusterModalBody" style="margin-top:12px; max-height:60vh; overflow:auto;">
-            </div>
-        </div>
-    </div>
-
-    <script src="/js/maplogic.js"></script>
     <script src="/js/map-loader.js"></script>
+    <script src="/js/maplogic.js"></script>
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
 </body>
 </html>
-

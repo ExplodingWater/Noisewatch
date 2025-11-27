@@ -2,28 +2,67 @@
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Raporto Zhurmën - Noisewatch Tirana</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#003366">
+    <title>Raporto Zhurmë - Noisewatch</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <a class="logo" href="/" aria-label="Kreu"></a>
         <div class="nav-links" id="navLinks">
-            <a href="/">Kreu</a>
-            <a href="/about">Rreth Nesh</a>
-            <a href="/services">Shërbimet</a>
-            <a href="/map">Harta</a>
-            <a href="/report">Raporto</a>
-            <a class="al" href="/report" title="Shqip"></a>
-            <a class="en" href="/en/report" title="English"></a>
+            <a href="/" class="nav-item">Kreu</a>
+            <a href="/about" class="nav-item">Rreth Nesh</a>
+            <a href="/services" class="nav-item">Shërbimet</a>
+            <a href="/map" class="nav-item">Harta</a>
+            <a href="/report" class="nav-item active">Raporto</a>
+            <div class="nav-controls">
+                <button class="theme-btn" id="themeToggle">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                </button>
+                <a class="lang-icon al-icon active" href="/report"></a>
+                <a class="lang-icon en-icon" href="/report-en"></a>
+            </div>
         </div>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
     </nav>
+
+    <main class="main-container">
+        <div class="report-card">
+            <h1 class="page-title">Raporto Zhurmë</h1>
+            <p class="page-subtitle">Ndihmoni në krijimin e një harte më të saktë të zhurmës në Tiranë.</p>
+
+            <div class="report-grid">
+                <div class="form-group location-controls">
+                    <label>1. Vendndodhja Juaj</label>
+                    <button type="button" id="locationBtn" class="btn btn-secondary" style="background:#334155; border-color:transparent;">
+                        📍 Gjej Vendndodhjen
+                    </button>
+                    <div id="locationStatus" style="margin-top:10px; font-size:0.9rem;">Shtypni butonin për të marrë koordinatat</div>
+                </div>
+
+                <div class="form-group recording-section">
+                    <label>2. Mat Nivelin e Zhurmës</label>
+                    <button id="recordBtn" class="record-btn" title="Fillo Matjen">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                    </button>
+                    <div class="db-display"><span id="dbValue">--</span> <span style="font-size:1rem">dB</span></div>
+                    <div class="db-label" id="dbLevel">Gati për matje</div>
+                    <canvas id="visualizerCanvas" width="300" height="50" style="width:100%; height:50px; margin-top:15px; border-radius:8px; background:#000;"></canvas>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">3. Përshkrimi i Burimit</label>
+                    <textarea id="description" placeholder="Çfarë po shkakton zhurmën? (psh. Trafik, Ndërtim...)" maxlength="250"></textarea>
+                    <div style="text-align:right; font-size:0.8rem; color:var(--text-light);"><span id="charCount">0</span>/250</div>
+                </div>
+
+                <button id="submitReport" class="submit-btn" disabled>Dërgo Raportin</button>
+            </div>
+        </div>
+    </main>
+
     <script>
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
@@ -31,100 +70,9 @@
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
-        });
     </script>
-
-    <main class="report-container">
-        <div class="report-form">
-            <h1>Raporto një zhurmë</h1>
-            <p class="subtitle">Raporto një ngjarje zhurme pranë teje.</p>
-
-            <form id="noiseReportForm">
-                <div class="form-section location-section">
-                    <div class="location-header">
-                        <h2>📍 Vendndodhja</h2>
-                        <button type="button" id="getLocationBtn" class="location-btn">
-                            📍 Përdor Vendndodhjen Aktuale
-                        </button>
-                    </div>
-                    <p class="location-status" id="locationStatus">Kliko për të marrë vendndodhjen tënde aktuale</p>
-                    <p class="permission-hint" id="locationPermissionHint" style="display:none;">
-                        Leja e vendndodhjes është bllokuar. Ju lutemi aktivizojeni në cilësimet e shfletuesit dhe provoni përsëri.
-                    </p>
-                    <div class="coordinates" id="accuracy" style="display:none;">
-                        <p>Saktësia: <span id="accuracyMeters">--</span> metra</p>
-                        <p style="font-size:12px;color:rgba(0,0,0,0.6)">Kujdes: Dërgimi i raporteve nga një laptop ose kompjuter desktop mund të jetë shumë i pasaktë.</p>
-                    </div>
-                    <!-- Latitude/Longitude removed — map preview is shown instead -->
-                    <div id="locationMapContainer" style="margin-top:10px;">
-                        <div id="locationMap" style="width:100%;height:200px;border:1px solid #ddd;display:none;"></div>
-                        <p id="outOfBoundsMsg" style="display:none;color:#b71c1c;font-weight:600;margin-top:8px;">Jeni jashtë kufijve të Tiranës — nuk mund të bëni raport.</p>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h2>Përshkrimi</h2>
-                    <textarea 
-                        id="description" 
-                        placeholder="Përshkruani shkurt zhurmën (p.sh., 'Punime të zhurmshme', 'Zhurmë trafiku', 'Muzikë nga një bar pranë')"
-                        required
-                        maxlength="255"
-                    ></textarea>
-                    <div class="char-count">
-                        <span id="charCount">0</span>/255 karaktere
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h2>Regjistrim Audio për Matjen e dB (decibels)</h2>
-                    <div class="recording-controls">
-                        <button type="button" id="startRecordingBtn" class="record-btn">
-                            Regjistro
-                        </button>
-                        <button type="button" id="enableMicBtn" class="record-btn enable-mic">
-                            Aktivizo Mikrofonin
-                        </button>
-                        <button type="button" id="stopRecordingBtn" class="record-btn stop" disabled>
-                            Stop
-                        </button>
-                    </div>
-                    
-                    <div class="recording-status" id="recordingStatus">
-                        Kliko "Regjistro" për të nisur regjistrimin e audios 5-sekondëshe
-                    </div>
-                    <p class="permission-hint" id="microphonePermissionHint" style="display:none; text-align:center;">
-                        Leja per perdorimin e  mikrofonit është bllokuar. Ju lutemi aktivizojeni në cilësimet e browserit tuaj dhe provojeni përsëri.
-                    </p>
-                    <p id="micPermissionStatus" style="display:none; text-align:center; font-size:13px; color:#333;"></p>
-                    
-                    <div class="audio-visualizer" id="audioVisualizer" style="display: none;">
-                        <canvas id="visualizerCanvas" width="300" height="100"></canvas>
-                    </div>
-                    
-                    <div class="db-display" id="dbDisplay" style="display: none;">
-                        <div class="db-value">
-                            <span id="dbValue">--</span> dB
-                        </div>
-                        <div class="db-level" id="dbLevel"></div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <button type="submit" id="submitBtn" class="submit-btn" disabled>
-                        Dërgo Raportin
-                    </button>
-                    <p class="privacy-note">
-                        Raporti juaj do të dërgohet në mënyrë anonime. Dhenat e juaja personale nuk do të mblidhen.
-                    </p>
-                </div>
-            </form>
-        </div>
-    </main>
-
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
     <script src="/js/report-logic.js"></script>
 </body>
 </html>

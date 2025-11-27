@@ -1,117 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Noisewatch</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#003366">
+    <title>Noisewatch Tirana</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <a class="logo" href="/" aria-label="Kreu"></a>
+        
         <div class="nav-links" id="navLinks">
-            <a href="/">Kreu</a>
-            <a href="/about">Rreth Nesh</a>
-            <a href="/services">Shërbimet</a>
-            <a href="/map">Harta</a>
-            <a href="/report">Raporto</a>
-            <a class="al" href="/" title="Shqip"></a>
-            <a class="en" href="/en" title="English"></a>
+            <a href="/" class="nav-item active">Kreu</a>
+            <a href="/about" class="nav-item">Rreth Nesh</a>
+            <a href="/services" class="nav-item">Shërbimet</a>
+            <a href="/map" class="nav-item">Harta</a>
+            <a href="/report" class="nav-item">Raporto</a>
+            
+            <div class="nav-controls">
+                <button class="theme-btn" id="themeToggle" aria-label="Toggle Dark Mode">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </button>
+                <a class="lang-icon al-icon active" href="/" title="Shqip"></a>
+                <a class="lang-icon en-icon" href="/en" title="English"></a>
+            </div>
         </div>
+
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
+
+    <header class="hero">
+        <h1>Zëri i qytetit<br>dëgjohet ndryshe.</h1>
+        <p>
+            Tirana është plot jetë, por zhurma po na prek shëndetin.
+            Noisewatch është platforma ku ju informoheni, kontribuoni dhe ndihmoni
+            për një qytet më të qetë.
+        </p>
+        <div class="hero-buttons">
+            <a href="/map" class="btn btn-primary">Shiko Hartën</a>
+            <a href="/report" class="btn btn-secondary">Raporto Zhurmë</a>
+        </div>
+    </header>
+
+    <section id="about" class="main-container" style="margin-top:0; min-height:auto;">
+        <h2 class="page-title">Rreth Nesh</h2>
+        <div style="text-align:center; max-width:800px; margin:0 auto; font-size:1.15rem; opacity:0.9;">
+            <p>
+                Ne jemi një grup profesionistësh dhe qytetarësh që besojmë se çdo zë ka rëndësi.
+                Noisewatch sjell teknologjinë dhe ndërgjegjësimin qytetar së bashku për një
+                Tiranë më të qetë dhe të jetueshme.
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <h2 style="margin-bottom:30px; opacity:0.9;">Bashkëpunëtorët</h2>
+        <div class="footer-logos">
+            <img src="/images/ALBICT logo.png" alt="ALBICT">
+            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
+            <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
+        </div>
+        <p style="margin-top:40px; font-size: 0.9rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+    </footer>
+
     <script>
-        // Hamburger menu toggle
+        // Mobile Menu Logic
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
-
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
         });
-
-        // Close menu when clicking a link
-        navLinks.querySelectorAll('a').forEach(link => {
+        navLinks.querySelectorAll('a.nav-item').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
                 navLinks.classList.remove('active');
             });
         });
     </script>
-
-    <section id="home">
-        <h1>Mirë se vini në Noisewatch</h1>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Mirë se vini në një hapësirë ku zëri i qytetit dëgjohet ndryshe.
-            Tirana është një qytet plot jetë, energji dhe lëvizje,
-            por kjo gjallëri shpesh fshihet pas një problemi të padukshëm: zhurmës.<br>
-            Trafiku i rënduar, ndërtimet dhe muzika e lartë e lokaleve
-            krijojnë ndotje akustike që prek jo vetëm veshët,
-            por edhe shëndetin dhe qetësinë tonë.<br>
-            Këtu fillon ndryshimi, një platformë e re ku
-            çdo qytetar mund të informohet, të kontribuojë
-            dhe të kuptojë më mirë ndikimin e zhurmës në jetën e përditshme.
-        </p>
-    </section>
-
-    <section id="about">
-        <h2>Rreth Nesh</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Ne jemi një grup profesionistësh, aktivistësh dhe qytetarësh të angazhuar që besojnë se çdo zë ka rëndësi - dhe çdo zhurmë ka ndikim. 
-            Noisewatch është krijuar si një platformë bashkëkohore <br>që sjell teknologjinë dhe ndërgjegjësimin qytetar në funksion të një qëllimi të përbashkët:  
-            një qytet më i qetë, më i shëndetshëm dhe më i jetueshëm.<br>
-            Inspirimi ynë lind nga realiteti i përditshëm i Tiranës - një qytet në zhvillim të vazhdueshëm, por edhe në sfidë me ndotjen akustike që shpesh neglizhohet.<br> 
-            Ekipi ynë punon për të sjellë të dhëna të besueshme, për të informuar publikun dhe për të inkurajuar pjesëmarrjen aktive të komunitetit në identifikimin 
-            dhe zgjidhjen e problemeve me zhurmën urbane.
-        </p>
-    </section>
-
-    <section id="services">
-        <h2>Shërbimet Tona</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-        Platforma jonë u jep mundësinë të gjithëve të marrin pjesë në monitorimin e zhurmës në Tiranë.
-        Nëpërmjet hartës interaktive, ju mund të shihni nivelin e zhurmës në çdo zonë të qytetit:<br>
-
-        🟩 E gjelbër - zona të qeta, ideale për pushim ose shëtitje<br>
-        🟨 E verdhë - zhurmë mesatare, e tolerueshme<br>
-        🟧 Portokalli - zhurmë e lartë që kërkon kujdes<br>
-        🟥 E kuqe - zhurmë shumë e lartë dhe e dëmshme për shëndetin<br>
-
-        Duke klikuar mbi një vend, shfaqen të dhëna si ora e matjes, burimi i zhurmës, intensiteti në decibel dhe raportimet e banorëve.<br>
-        Çdokush mund të shtojë një raport të ri. Sa më shumë dëgjime të kemi, aq më e saktë bëhet harta jonë.
-        </p>
-    </section>
-
-
-  <section id="contact">
-    <h2>Kontakt</h2>
-    <h3>____________________________________________________________________________________________________________________</h3>
-    <p>
-    Ky projekt është më shumë se një faqe interneti. Ai është një thirrje për ndërgjegjësim dhe bashkëpunim qytetar.
-    Nëse dëshiron të kontribuosh, të raportosh zhurma ose <br>të ndihmosh që Tirana të bëhet një qytet më i qetë, na kontakto:<br>
-
-    Na dërgoni një email: <b>noisewatchal@gmail.com</b><br>
-
-    Qetësia nuk është privilegj, është e drejtë njerëzore.
-    Le ta kthejmë Tiranën në një qytet ku dëgjohet më shumë zëri i njeriut dhe më pak zhurma e makinës.
-    </p>
-  </section>
-
-  <section id="footer">
-    <h2 class="footer-title">Collaborators</h2>
-    <div class="images">
-    <img class="albict" src="/images/ALBICT logo.png" alt="">
-    <img class="bashkia" src="/images/Bashkia Tirane.png" alt="">
-    <img class="climate" src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="">
-    </div>
-  </section>
-
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
 </body>
 </html>

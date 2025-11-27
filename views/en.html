@@ -2,28 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Noisewatch</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#003366">
+    <title>Noisewatch Tirana</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/en" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+        <a class="logo" href="/en" aria-label="Home"></a>
+        
         <div class="nav-links" id="navLinks">
-            <a href="/en">Home</a>
-            <a href="/en/about">About Us</a>
-            <a href="/en/services">Services</a>
-            <a href="/en/map">Map</a>
-            <a href="/en/report">Report</a>
-            <a class="al" href="/" title="Albanian"></a>
-            <a class="en" href="/en" title="English"></a>
+            <a href="/en" class="nav-item active">Home</a>
+            <a href="/about-en" class="nav-item">About Us</a>
+            <a href="/services-en" class="nav-item">Services</a>
+            <a href="/map-en" class="nav-item">Map</a>
+            <a href="/report-en" class="nav-item">Report</a>
+            
+            <div class="nav-controls">
+                <button class="theme-btn" id="themeToggle" aria-label="Toggle Dark Mode">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </button>
+                <a class="lang-icon al-icon" href="/" title="Shqip"></a>
+                <a class="lang-icon en-icon active" href="/en" title="English"></a>
+            </div>
         </div>
+
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
     </nav>
+
+    <header class="hero">
+        <h1>The city's voice<br>heard differently.</h1>
+        <p>
+            Tirana is full of life, but noise affects our health.
+            Noisewatch is the platform where you get informed, contribute, and help build a quieter city.
+        </p>
+        <div class="hero-buttons">
+            <a href="/map-en" class="btn btn-primary">View Map</a>
+            <a href="/report-en" class="btn btn-secondary">Report Noise</a>
+        </div>
+    </header>
+
+    <section id="about" class="main-container" style="margin-top:0; min-height:auto;">
+        <h2 class="page-title">About Us</h2>
+        <div style="text-align:center; max-width:800px; margin:0 auto; font-size:1.15rem; opacity:0.9;">
+            <p>
+                We are a group of professionals and citizens who believe every voice matters.
+                Noisewatch brings technology and civic awareness together for a quieter, more livable Tirana.
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <h2 style="margin-bottom:30px; opacity:0.9;">Collaborators</h2>
+        <div class="footer-logos">
+            <img src="/images/ALBICT logo.png" alt="ALBICT">
+            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
+            <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
+        </div>
+        <p style="margin-top:40px; font-size: 0.9rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+    </footer>
+
     <script>
         const hamburger = document.getElementById('hamburger');
         const navLinks = document.getElementById('navLinks');
@@ -31,81 +74,14 @@
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
+        navLinks.querySelectorAll('a.nav-item').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
                 navLinks.classList.remove('active');
             });
         });
     </script>
-
-    <section id="home">
-        <h1>Welcome to Noisewatch</h1>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Tirana is a city full of life, energy, and movement,
-            but this vibrancy is often hidden behind an invisible problem: noise.
-            Heavy traffic, construction, and loud music <br>from local venues
-            create acoustic pollution that affects not only our ears
-            but also our health and peace of mind.
-            Here begins the change—a new platform where
-            every citizen <br>can get informed, contribute,
-            and better understand the impact of noise in everyday life.
-        </p>
-    </section>
-
-    <section id="about">
-        <h2>About Us</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            We are a group of professionals, activists, and engaged citizens who believe that every voice matters—and every noise has an impact.<br>
-            Noisewatch is created as a modern platform that brings technology and civic awareness together in pursuit of a common goal: a quieter, healthier, and more livable city.<br> 
-            Our inspiration comes from the daily reality of Tirana—a city in continuous development, but also facing the challenge of acoustic pollution that is often neglected.<br> 
-            Our team works to provide reliable data, inform the public, and encourage active community participation in identifying and solving urban noise problems.
-        </p>
-    </section>
-
-    <section id="services">
-        <h2>Services</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-        Our platform gives everyone the opportunity to participate in monitoring noise in Tirana.<br>
-        Through the interactive map, you can see the noise level in every area of the city:<br>
-
-        🟩 Green - quiet areas, ideal for rest or walking<br>
-        🟨 Yellow - moderate noise, tolerable<br>
-        🟧 Orange - high noise that requires caution<br>
-        🟥 Red - very high noise harmful to health<br>
-
-        By clicking on a location, data such as the time of measurement, noise source, intensity in decibels, and resident's reports are displayed.<br>
-        Anyone can add a new report. The more listens we have, the more accurate our map becomes.
-        </p>
-    </section>
-
-
-  <section id="contact">
-    <h2>Contact</h2>
-    <h3>____________________________________________________________________________________________________________________</h3>
-    <p>
-    This project is more than just a website. It is a call for awareness and civic cooperation.<br>
-    If you want to contribute, report noise, or<br>
-    help make Tirana a quieter city, contact us:<br>
-
-    Email us at: <b>noisewatchal@gmail.com</b><br>
-
-    Quietness is not a privilege, it is a human right.<br>
-    Let's turn Tirana into a city where the voice of the people is heard more, and the noise of cars less.
-    </p>
-  </section>
-
-  <section id="footer">
-    <h2 class="footer-title">Collaborators</h2>
-    <div class="images">
-    <img class="albict" src="/images/ALBICT logo.png" alt="">
-    <img class="bashkia" src="/images/Bashkia Tirane.png" alt="">
-    <img class="climate" src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="">
-    </div>
-  </section>
-
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
 </body>
 </html>

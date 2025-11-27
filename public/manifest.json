@@ -1,0 +1,21 @@
+{
+  "name": "Noisewatch Tirana",
+  "short_name": "Noisewatch",
+  "start_url": "/map",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#003366",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logonoisewatch.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logonoisewatch.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

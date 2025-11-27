@@ -4,162 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Services - Noisewatch Tirana</title>
+    <link rel="manifest" href="/manifest.json">
+    <title>Services - Noisewatch</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/en" style="pointer-events: none;"></a>
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="nav-links" id="navLinks">
-            <a href="/en">Home</a>
-            <a href="/en/about">About Us</a>
-            <a href="/en/services">Services</a>
-            <a href="/en/map">Map</a>
-            <a href="/en/report">Report</a>
-            <a class="al" href="/services" title="Albanian"></a>
-            <a class="en" href="/en/services" title="English"></a>
+        <a href="/en" class="logo" aria-label="Home"></a>
+        
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="/en" class="nav-item">Home</a>
+                <a href="/about-en" class="nav-item">About Us</a>
+                <a href="/services-en" class="nav-item active">Services</a>
+                <a href="/map-en" class="nav-item">Map</a>
+                <a href="/report-en" class="nav-item">Report</a>
+            </div>
+
+            <button class="menu-btn" id="menuToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <div class="menu-dropdown" id="menuDropdown">
+            <div class="mobile-links">
+                <a href="/en">Home</a>
+                <a href="/about-en">About Us</a>
+                <a href="/services-en">Services</a>
+                <a href="/map-en">Map</a>
+                <a href="/report-en">Report</a>
+                <div class="menu-divider"></div>
+            </div>
+
+            <div class="theme-switcher">
+                <button class="theme-opt-btn" data-theme="light" aria-label="Light Mode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
+                <button class="theme-opt-btn" data-theme="system" aria-label="System Default">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </button>
+                <button class="theme-opt-btn" data-theme="dark" aria-label="Dark Mode">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+
+            <div class="menu-divider"></div>
+
+            <div class="lang-options">
+                <a href="/services" class="lang-btn" style="opacity:0.6"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/services-en" class="lang-btn"><div class="lang-flag flag-en"></div> Eng</a>
+            </div>
         </div>
     </nav>
+
+    <main class="main-container">
+        <div class="content-wrapper">
+            <h1 class="page-title">Our Services</h1>
+            <div class="divider"></div>
+            
+            <div class="section-text">
+                <p style="margin-bottom:30px;">
+                    Our platform empowers everyone to participate in noise monitoring in Tirana.
+                    Through the interactive map, you can see noise levels in real-time across the city.
+                </p>
+
+                <div style="background: var(--bg-card); padding: 30px; border-radius: 16px; border: 1px solid var(--border); margin-top: 40px; text-align: left;">
+                    <h3 style="margin-bottom: 20px; font-size: 1.2rem; color: var(--text-main);">Color Code</h3>
+                    <div style="display: grid; gap: 15px; font-weight: 500;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟩</span>
+                            <div><span style="color: #4CAF50; font-weight:bold;">Green</span> <span style="opacity:0.7">(< 50dB)</span> — Quiet areas, ideal for rest.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟨</span>
+                            <div><span style="color: #FFC107; font-weight:bold;">Yellow</span> <span style="opacity:0.7">(51-80dB)</span> — Moderate noise, tolerable.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟧</span>
+                            <div><span style="color: #FF9800; font-weight:bold;">Orange</span> <span style="opacity:0.7">(81-100dB)</span> — High noise requiring caution.</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span style="font-size:1.5rem;">🟥</span>
+                            <div><span style="color: #F44336; font-weight:bold;">Red</span> <span style="opacity:0.7">(> 100dB)</span> — Very high, harmful noise.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 50px; text-align: center;">
+                    <a href="/report-en" class="action-btn btn-solid">Report Now</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="partner-logos">
+            <img src="/images/ALBICT logo.png" alt="ALBICT">
+            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
+            <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
+        </div>
+        <p style="font-size: 0.8rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+    </footer>
+
     <script>
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
+        const menuBtn = document.getElementById('menuToggle');
+        const menuDropdown = document.getElementById('menuDropdown');
+        menuBtn.addEventListener('click', () => {
+            menuDropdown.classList.toggle('open');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
+        document.addEventListener('click', (e) => {
+            if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+                menuDropdown.classList.remove('open');
+            }
         });
     </script>
-
-    <section id="services">
-        <h1>Our Services</h1>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Our platform gives everyone the opportunity to participate in monitoring noise in Tirana.
-            Through the interactive map, you can see the noise level in every area of the city.
-        </p>
-    </section>
-
-    <section id="noise-monitoring">
-        <h2>Noise Monitoring</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            We provide real-time monitoring of noise levels in all areas of Tirana:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>🟩 Quiet Areas:</strong> Noise levels below 50 dB - ideal for rest and walking</li>
-            <li><strong>🟨 Normal Noise:</strong> Levels 51-80 dB - tolerable for normal activities</li>
-            <li><strong>� High Noise:</strong> Levels 81-100 dB - require caution and may affect health</li>
-            <li><strong>�🟥 Very High Noise:</strong> Levels above 100 dB - harmful to health and require immediate action</li>
-        </ul>
-    </section>
-
-    <section id="interactive-map">
-        <h2>Interactive Map</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Our interactive map allows you to:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li>View noise levels in any area of the city in real-time</li>
-            <li>Click on a location to see measurement details</li>
-            <li>View measurement time, noise source, and intensity in decibels</li>
-            <li>Read resident reports about noise in that area</li>
-            <li>Identify the most problematic and quietest areas of the city</li>
-        </ul>
-    </section>
-
-    <section id="noise-reporting">
-        <h2>Noise Reporting</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            Anyone can contribute to noise monitoring by:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Audio Recording:</strong> Accurate noise measurement through your device's microphone</li>
-            <li><strong>Detailed Description:</strong> Information about the source and nature of the noise</li>
-            <li><strong>Precise Location:</strong> Use of GPS for accurate positioning</li>
-            <li><strong>Anonymous Reporting:</strong> Protection of your privacy during reporting</li>
-        </ul>
-        <p>
-            The more reports we have, the more accurate our map becomes and the more effective the solutions.
-        </p>
-    </section>
-
-    <section id="data-analysis">
-        <h2>Data Analysis</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            We provide detailed data analysis for:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Noise Trends:</strong> Changes in noise levels over time</li>
-            <li><strong>Problem Areas:</strong> Identification of areas with the greatest issues</li>
-            <li><strong>Peak Hours:</strong> When noise is highest during the day</li>
-            <li><strong>Main Sources:</strong> Analysis of the most important noise sources</li>
-            <li><strong>Periodic Reports:</strong> Monthly and annual data summaries</li>
-        </ul>
-    </section>
-
-    <section id="community-engagement">
-        <h2>Community Engagement</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            We believe in the power of community to create positive change:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Workshops and Training:</strong> Education about the impact of noise on health</li>
-            <li><strong>Awareness Campaigns:</strong> Information about the importance of quietness</li>
-            <li><strong>Collaboration with Authorities:</strong> Improvement of urban policies</li>
-            <li><strong>Local Initiatives:</strong> Support for community projects</li>
-            <li><strong>Data Provision:</strong> Open data for research and analysis</li>
-        </ul>
-    </section>
-
-    <section id="technical-support">
-        <h2>Technical Support</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            We provide technical support for:
-        </p>
-        <ul style="text-align: left; max-width: 800px; margin: 0 auto; font-size: 2vh; line-height: 4vh;">
-            <li><strong>Platform Usage:</strong> Instructions for using all features</li>
-            <li><strong>Technical Issues:</strong> Resolving problems with recording and reporting</li>
-            <li><strong>API Integration:</strong> For developers who want to integrate our data</li>
-            <li><strong>Training:</strong> Training sessions for organizations and institutions</li>
-        </ul>
-    </section>
-
-    <section id="contact">
-        <h2>Contact for Services</h2>
-        <h3>____________________________________________________________________________________________________________________</h3>
-        <p>
-            For more information about our services or to request support:
-        </p>
-        <p>
-            📧 Email: services@noisewatch.al<br>
-            📞 Phone: +355 XX XXX XXXX<br>
-            📍 Address: Tirana, Albania<br>
-            🌐 Website: www.noisewatch.al
-        </p>
-    </section>
-
-    <section id="footer">
-        <h2 class="footer-title">Collaborators</h2>
-        <div class="images">
-            <img class="albict" src="/images/ALBICT logo.png" alt="">
-            <img class="bashkia" src="/images/Bashkia Tirane.png" alt="">
-            <img class="climate" src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="">
-        </div>
-    </section>
-
+    <script src="/js/theme-switch.js"></script>
+    <script src="/js/pwa-init.js"></script>
 </body>
 </html>

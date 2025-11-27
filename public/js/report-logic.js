@@ -1,523 +1,182 @@
-class NoiseReporter {
-    constructor() {
-        this.mediaRecorder = null;
-        this.audioContext = null;
-        this.analyser = null;
-        this.microphone = null;
-        this.preGrantedMicStream = null;
-    this.activeStream = null; // the stream in use for the current recording session
-        this.isRecording = false;
-        this.recordedChunks = [];
-        this.currentLocation = null;
-        this.recordingDuration = 5000;
-        
-        this.initializeElements();
-        this.setupEventListeners();
-        // Tirana bounding box (approximate). Adjust as needed.
-        // These are inclusive bounds: lat between MIN_LAT and MAX_LAT, lng between MIN_LNG and MAX_LNG.
-        // If you need exact municipal borders, replace this with a GeoJSON polygon and use point-in-polygon.
-        this.TIRANA_BOUNDS = {
-            MIN_LAT: 41.20,
-            MAX_LAT: 41.45,
-            MIN_LNG: 19.65,
-            MAX_LNG: 19.98
-        };
-        this.withinBounds = false;
-        this._mapsLoaded = false;
-        this.tiranaPolygon = null;
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Report logic loaded");
 
-    initializeElements() {
-        this.form = document.getElementById('noiseReportForm');
-        this.getLocationBtn = document.getElementById('getLocationBtn');
-        this.locationStatus = document.getElementById('locationStatus');
-        this.coordinates = document.getElementById('coordinates');
-        this.accuracyBox = document.getElementById('accuracy');
-        this.latitude = document.getElementById('latitude');
-        this.longitude = document.getElementById('longitude');
-        this.accuracyMeters = document.getElementById('accuracyMeters');
-        this.description = document.getElementById('description');
-        this.charCount = document.getElementById('charCount');
-        this.startRecordingBtn = document.getElementById('startRecordingBtn');
-        this.stopRecordingBtn = document.getElementById('stopRecordingBtn');
-    this.enableMicBtn = document.getElementById('enableMicBtn');
-    this.micPermissionStatus = document.getElementById('micPermissionStatus');
-        this.recordingStatus = document.getElementById('recordingStatus');
-        this.locationPermissionHint = document.getElementById('locationPermissionHint');
-        this.microphonePermissionHint = document.getElementById('microphonePermissionHint');
-        this.audioVisualizer = document.getElementById('audioVisualizer');
-        this.visualizerCanvas = document.getElementById('visualizerCanvas');
-        this.dbDisplay = document.getElementById('dbDisplay');
-        this.dbValue = document.getElementById('dbValue');
-        this.dbLevel = document.getElementById('dbLevel');
-        this.submitBtn = document.getElementById('submitBtn');
-        this.locationMapDiv = document.getElementById('locationMap');
-        this.outOfBoundsMsg = document.getElementById('outOfBoundsMsg');
-    }
+    // DOM Elements
+    const locationBtn = document.getElementById('locationBtn');
+    const locationStatus = document.getElementById('locationStatus');
+    const recordBtn = document.getElementById('recordBtn');
+    const dbValue = document.getElementById('dbValue');
+    const dbLevel = document.getElementById('dbLevel');
+    const descriptionInput = document.getElementById('description');
+    const charCount = document.getElementById('charCount');
+    const submitReportBtn = document.getElementById('submitReport');
+    const canvas = document.getElementById('visualizerCanvas');
+    
+    // State variables
+    let latitude = null;
+    let longitude = null;
+    let accuracy = null;
+    let measuredDb = 0;
+    let isRecording = false;
+    
+    // Audio variables
+    let audioContext = null;
+    let analyser = null;
+    let microphone = null;
+    let javascriptNode = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    const RECORDING_DURATION = 5000; // 5 seconds
 
-    setupEventListeners() {
-        this.getLocationBtn.addEventListener('click', () => this.requestIOSLocationPermissionThenGet());
-        this.description.addEventListener('input', () => this.updateCharCount());
-        this.startRecordingBtn.addEventListener('click', () => this.requestIOSMicrophonePermissionThenRecord());
-        if (this.enableMicBtn) this.enableMicBtn.addEventListener('click', () => this.promptMicrophonePermission());
-        this.stopRecordingBtn.addEventListener('click', () => this.stopRecording());
-        this.form.addEventListener('submit', (e) => this.submitReport(e));
-    }
+    // --- 1. Location Logic ---
+    if (locationBtn) {
+        locationBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            locationBtn.disabled = true;
+            locationStatus.innerText = "Duke kërkuar... / Locating...";
 
-    // Public helper to prompt for microphone permission explicitly and show status
-    async promptMicrophonePermission() {
-        try {
-            // Check secure context for iOS; localhost is allowed. This was so bullcrap in the beginning because I didn't know you had to use ngrok to test in iOS and I was losing my mind for a proper week or so. 
-            const host = window.location.hostname;
-            if (!window.isSecureContext && host !== 'localhost' && host !== '127.0.0.1') {
-                this.micPermissionStatus.style.display = 'block';
-                this.micPermissionStatus.textContent = 'Microphone access requires HTTPS or localhost. Use HTTPS or open on localhost.';
+            if (!navigator.geolocation) {
+                locationStatus.innerText = "Geolocation not supported";
                 return;
             }
 
-            this.micPermissionStatus.style.display = 'block';
-            this.micPermissionStatus.textContent = 'Requesting microphone permission...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                    accuracy = position.coords.accuracy;
 
-            // If Permissions API available, show current state
-            let state = 'unknown';
-            try {
-                state = await this.checkMicrophonePermission();
-                console.log('Permission state before prompt:', state);
-            } catch (e) {
-                console.warn('Could not query permission state', e);
-            }
-
-            // Request a short-lived stream to trigger the permission dialog
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            // Save for reuse to avoid multiple prompts
-            this.preGrantedMicStream = stream;
-
-            // Immediately mark status as granted and keep the stream for reuse
-            this.micPermissionStatus.textContent = 'Microphone permission granted.';
-            console.log('Microphone stream obtained and stored for reuse');
-        } catch (err) {
-            console.error('Error requesting microphone permission:', err);
-            this.micPermissionStatus.style.display = 'block';
-            if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) { // Usually browser errors for denied permission
-                this.micPermissionStatus.textContent = 'Microphone permission denied. Please enable it in your browser settings.';
-                this.microphonePermissionHint.style.display = 'block';
-            } else if (err && err.name === 'NotFoundError') {
-                this.micPermissionStatus.textContent = 'No microphone found on this device.';
-            } else {
-                this.micPermissionStatus.textContent = 'Could not get microphone: ' + (err.message || err.name || 'unknown error');
-            }
-        }
+                    locationStatus.innerHTML = `✅ <strong>Lat:</strong> ${latitude.toFixed(4)}, <strong>Lng:</strong> ${longitude.toFixed(4)}`;
+                    locationBtn.style.backgroundColor = "#4CAF50";
+                    locationBtn.style.color = "white";
+                    locationBtn.innerText = "✅ OK";
+                    checkFormValidity();
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    locationStatus.innerText = "Error (Check Permissions)";
+                    locationBtn.disabled = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
     }
 
-    // iOS-specific helpers: trigger permission prompts directly from user gesture handlers
-    async requestIOSLocationPermissionThenGet() {
-        // iOS requires direct user gesture for geolocation prompts
-        await this.getCurrentLocation();
-    }
-
-    async requestIOSMicrophonePermissionThenRecord() {
-        try {
-            // If we already obtained a mic stream (e.g., from a prior prompt), reuse it
-            if (!this.preGrantedMicStream) {
-                // If not a secure context (HTTPS) and not localhost, iOS Safari will
-                // refuse to show the microphone prompt. Inform the user.
-                const host = window.location.hostname;
-                if (!window.isSecureContext && host !== 'localhost' && host !== '127.0.0.1') {
-                    this.recordingStatus.textContent = 'Microphone access requires a secure connection (HTTPS). Open the site via HTTPS or on localhost, or use a tunnel (e.g., ngrok).';
-                    this.microphonePermissionHint.style.display = 'block';
-                    console.warn('Attempted getUserMedia in insecure context:', window.location.href);
-                    return;
-                }
-
-                // Log current permission state when available for diagnostics
+    // --- 2. Audio Recording Logic ---
+    if (recordBtn) {
+        recordBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!isRecording) {
                 try {
-                    const perm = await this.checkMicrophonePermission();
-                    console.log('Microphone permission state before prompt:', perm);
-                } catch (e) {
-                    console.warn('Could not query microphone permission state', e);
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    startMeter(stream);
+                } catch (err) {
+                    console.error(err);
+                    alert("Microphone access is required to measure noise.");
                 }
-
-                // Request a lightweight audio stream to prompt for permission on iOS.
-                // We keep it so repeated recordings don't prompt again.
-                console.log('Requesting microphone access via getUserMedia()');
-                this.preGrantedMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                console.log('getUserMedia resolved, stream obtained');
+            } else {
+                // Allow manual stop, though it auto-stops after 5s usually
+                stopMeter();
             }
-            await this.startRecording(this.preGrantedMicStream);
-        } catch (e) {
-            console.error('Microphone permission error:', e);
-            this.recordingStatus.textContent = 'Microphone permission denied. Please enable it and try again.';
-            if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) {
-                this.microphonePermissionHint.style.display = 'block';
-            }
-        }
+        });
     }
 
-    async getCurrentLocation() {
-        this.locationStatus.textContent = 'Getting your location...';
-        this.getLocationBtn.disabled = true;
+    function startMeter(stream) {
+        isRecording = true;
+        recordBtn.classList.add('recording'); 
+        if(dbLevel) dbLevel.innerText = "Recording (5s)...";
+        
+        // 1. Setup Visualizer (Instant feedback)
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+        javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
 
-        if (!navigator.geolocation) {
-            this.locationStatus.textContent = 'Geolocation is not supported by this browser.';
-            this.getLocationBtn.disabled = false;
-            return;
-        }
+        analyser.smoothingTimeConstant = 0.8;
+        analyser.fftSize = 1024;
 
-        try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 20000,
-                    maximumAge: 0
-                });
-            });
+        microphone.connect(analyser);
+        analyser.connect(javascriptNode);
+        javascriptNode.connect(audioContext.destination);
 
-            this.currentLocation = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: (typeof position.coords.accuracy === 'number') ? Math.round(position.coords.accuracy) : null
-            };
+        javascriptNode.onaudioprocess = function() {
+            const array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            // Just draw the visualizer, don't calculate final dB here
+            drawVisualizer(array);
+        };
 
-            if (this.latitude) this.latitude.textContent = this.currentLocation.latitude.toFixed(6);
-            if (this.longitude) this.longitude.textContent = this.currentLocation.longitude.toFixed(6);
-            if (typeof position.coords.accuracy === 'number') {
-                this.accuracyMeters.textContent = Math.round(position.coords.accuracy);
-                this.accuracyBox.style.display = 'block';
-            }
-            
-            if (this.coordinates) this.coordinates.style.display = 'block';
-            this.locationStatus.textContent = 'Location captured!';
-            this.getLocationBtn.textContent = 'Update location';
-            this.getLocationBtn.disabled = false;
-            // Load polygon and render confirmation map and check bounds
-            try {
-                await Promise.all([this.ensureGoogleMapsLoaded(), this.loadTiranaPolygon()]);
-                this.renderLocationMap(this.currentLocation.latitude, this.currentLocation.longitude);
-            } catch (e) {
-                // If maps or polygon fail to load, still perform bbox check as fallback
-                console.warn('Google Maps or polygon failed to load for location preview:', e);
-            }
-            await this.evaluateBoundsAndUI();
-            this.checkFormValidity();
-
-        } catch (error) {
-            console.error('Error getting location:', error);
-            this.locationStatus.textContent = 'Could not get your location. Please try again.';
-            if (error && (error.code === error.PERMISSION_DENIED)) {
-                this.locationPermissionHint.style.display = 'block';
-            }
-            this.getLocationBtn.disabled = false;
-        }
-    }
-
-    // Load Google Maps JS dynamically (uses placeholder API key). Resolves when google.maps is available.
-    async ensureGoogleMapsLoaded() {
-        if (this._mapsLoaded) return;
-        if (window.google && window.google.maps) {
-            this._mapsLoaded = true;
-            return;
-        }
-
-        // Fetch the maps key from the server endpoint and load Google Maps dynamically
-        try {
-            const resp = await fetch('/api/maps-key');
-            if (!resp.ok) throw new Error('Failed to fetch maps key');
-            const data = await resp.json();
-            const key = data.key || '';
-            const script = document.createElement('script');
-            // Request geometry + marker libraries and include Google's loading=async flag
-            script.async = true;
-            script.defer = true;
-            script.onload = () => { this._mapsLoaded = true; };
-            script.onerror = (e) => { throw e || new Error('Failed to load Google Maps script'); };
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=geometry,marker&loading=async`;
-            document.head.appendChild(script);
-            // Wait until google.maps is available
-            await new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => reject(new Error('Google Maps load timeout')), 10000);
-                const check = () => {
-                    if (window.google && window.google.maps) {
-                        clearTimeout(timeout);
-                        this._mapsLoaded = true;
-                        return resolve();
-                    }
-                    setTimeout(check, 200);
-                };
-                check();
-            });
-        } catch (err) {
-            console.warn('Error loading Google Maps:', err);
-            throw err;
-        }
-    }
-
-    async loadTiranaPolygon() {
-        if (this.tiranaPolygon) return;
-        try {
-            const resp = await fetch('/data/tirana_polygon.json');
-            if (!resp.ok) throw new Error('Failed to fetch Tirana polygon');
-            const geo = await resp.json();
-            const coords = (geo && geo.features && geo.features[0] && geo.features[0].geometry && geo.features[0].geometry.coordinates && geo.features[0].geometry.coordinates[0]) || null;
-            this.tiranaPolygon = coords; // array of [lng, lat]
-        } catch (e) {
-            console.warn('Could not load Tirana polygon:', e);
-            this.tiranaPolygon = null;
-        }
-    }
-
-    // Ray-casting algorithm for point-in-polygon (client side). polygon is array of [lng, lat]
-    pointInPolygon(lat, lng, polygon) {
-        if (!polygon || !Array.isArray(polygon)) return false;
-        let inside = false;
-        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-            const xi = polygon[i][1], yi = polygon[i][0];
-            const xj = polygon[j][1], yj = polygon[j][0];
-            const intersect = ((xi > lat) !== (xj > lat)) && (lng < (yj - yi) * (lat - xi) / (xj - xi + 0.0) + yi);
-            if (intersect) inside = !inside;
-        }
-        return inside;
-    }
-
-    renderLocationMap(lat, lng) {
-        if (!this.locationMapDiv) return;
-        this.locationMapDiv.style.display = 'block';
-        // Create a map centered on user location and show a marker
-        try {
-            const center = { lat: parseFloat(lat), lng: parseFloat(lng) };
-            const map = new google.maps.Map(this.locationMapDiv, {
-                center,
-                zoom: 15,
-                disableDefaultUI: true
-            });
-            try {
-                if (google.maps && google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
-                    new google.maps.marker.AdvancedMarkerElement({ position: center, map, title: 'Your reported location' });
-                } else {
-                    new google.maps.Marker({ position: center, map, title: 'Your reported location' });
-                }
-            } catch (e) {
-                try { new google.maps.Marker({ position: center, map, title: 'Your reported location' }); } catch (err) { /* ignore */ }
-            }
-        } catch (e) {
-            console.warn('Unable to initialize location map:', e);
-        }
-    }
-
-    async evaluateBoundsAndUI() {
-        if (!this.currentLocation) return;
-        const lat = this.currentLocation.latitude;
-        const lng = this.currentLocation.longitude;
-        let inside = false;
-        if (this.tiranaPolygon) {
-            inside = this.pointInPolygon(lat, lng, this.tiranaPolygon);
-        } else {
-            const b = this.TIRANA_BOUNDS;
-            inside = (lat >= b.MIN_LAT && lat <= b.MAX_LAT && lng >= b.MIN_LNG && lng <= b.MAX_LNG);
-        }
-        this.withinBounds = inside;
-        if (!inside) {
-            // Grey out submit and show message
-            this.submitBtn.disabled = true;
-            this.submitBtn.style.opacity = '0.5';
-            this.submitBtn.style.pointerEvents = 'none';
-            if (this.outOfBoundsMsg) this.outOfBoundsMsg.style.display = 'block';
-        } else {
-            // Restore submit appearance; final enabled state still depends on other form validity
-            this.submitBtn.style.opacity = '';
-            this.submitBtn.style.pointerEvents = '';
-            if (this.outOfBoundsMsg) this.outOfBoundsMsg.style.display = 'none';
-        }
-    }
-// Oh man the hell I had to go through just so that stupid Apple devices would allow me to access the microphone
-    async startRecording(preExistingStream) {
-        try {
-            // Request microphone access
-            const stream = preExistingStream || await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    sampleRate: 44100
-                }
-            });
-
-            // Keep track of the active stream for correct cleanup later.
-            this.activeStream = stream;
-
-            // Set up audio context for real-time analysis
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.analyser = this.audioContext.createAnalyser();
-            // createMediaStreamSource does not expose the original MediaStream in all browsers,
-            // so we keep `this.activeStream` and stop tracks from it when needed.
-            this.microphone = this.audioContext.createMediaStreamSource(this.activeStream);
-            
-            this.analyser.fftSize = 256;
-            this.microphone.connect(this.analyser);
-
-            // Set up media recorder
-            this.mediaRecorder = new MediaRecorder(stream);
-            this.recordedChunks = [];
-
-            this.mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    this.recordedChunks.push(event.data);
-                }
-            };
-
-            this.mediaRecorder.onstop = () => {
-                this.processRecording();
-            };
-
-            // Start recording
-            this.mediaRecorder.start();
-            this.isRecording = true;
-
-            // Update UI
-            this.startRecordingBtn.disabled = true;
-            this.stopRecordingBtn.disabled = false;
-            this.recordingStatus.textContent = '🔴 Recording... point your device to the source of the noise';
-            this.audioVisualizer.style.display = 'block';
-            this.microphonePermissionHint.style.display = 'none';
-
-            // Start visualizer
-            this.startVisualizer();
-
-            // Auto-stop after 5 seconds
-            setTimeout(() => {
-                if (this.isRecording) {
-                    this.stopRecording();
-                }
-            }, this.recordingDuration);
-
-        } catch (error) {
-            console.error('Error starting recording:', error);
-            this.recordingStatus.textContent = 'Could not access microphone. Please check permissions.';
-            if (error && (error.name === 'NotAllowedError' || error.name === 'SecurityError')) {
-                this.microphonePermissionHint.style.display = 'block';
-            }
-        }
-    }
-
-    stopRecording() {
-        if (this.mediaRecorder && this.isRecording) {
-            this.mediaRecorder.stop();
-            this.isRecording = false;
-
-            // Stop tracks for the active stream if it's not the preserved pre-granted stream.
-            // If we used a pre-granted stream for prompting we may want to keep it alive
-            // for reuse across recordings; only stop transient streams.
-            try {
-                if (this.activeStream && this.activeStream.getTracks) {
-                    const tracks = this.activeStream.getTracks();
-                    // If the active stream is the same object as preGrantedMicStream, don't stop it
-                    const shouldStop = !(this.preGrantedMicStream && this.preGrantedMicStream === this.activeStream);
-                    if (shouldStop) {
-                        tracks.forEach(track => track.stop());
-                    }
-                }
-            } catch (e) {
-                // Non-fatal: some browsers expose different stream objects; ignore stop errors
-                console.warn('Error stopping active stream tracks:', e);
-            }
-
-            // Clear active stream reference (we may keep preGrantedMicStream intact)
-            if (!(this.preGrantedMicStream && this.preGrantedMicStream === this.activeStream)) {
-                this.activeStream = null;
-            }
-
-            // Update UI
-            this.startRecordingBtn.disabled = false;
-            this.stopRecordingBtn.disabled = true;
-            this.recordingStatus.textContent = 'Processing audio...';
-            this.audioVisualizer.style.display = 'none';
-        }
-    }
-
-    // Permission helpers: gracefully handle browsers (Safari/iOS) that don't
-    // fully implement the Permissions API.
-    async checkMicrophonePermission() {
-        try {
-            if (!navigator.permissions) return 'unknown';
-            const status = await navigator.permissions.query({ name: 'microphone' });
-            return status.state; // 'granted' | 'denied' | 'prompt'
-        } catch (e) {
-            // Safari may throw or not support microphone in Permissions API
-            return 'unknown';
-        }
-    }
-
-    async checkLocationPermission() {
-        try {
-            if (!navigator.permissions) return 'unknown';
-            const status = await navigator.permissions.query({ name: 'geolocation' });
-            return status.state; // 'granted' | 'denied' | 'prompt'
-        } catch (e) {
-            return 'unknown';
-        }
-    }
-
-    startVisualizer() {
-        const canvas = this.visualizerCanvas;
-        const ctx = canvas.getContext('2d');
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        const draw = () => {
-            if (!this.isRecording) return;
-
-            requestAnimationFrame(draw);
-            this.analyser.getByteFrequencyData(dataArray);
-
-            ctx.fillStyle = 'rgb(20, 20, 20)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const barWidth = (canvas.width / bufferLength) * 2.5;
-            let barHeight;
-            let x = 0;
-
-            for (let i = 0; i < bufferLength; i++) {
-                barHeight = (dataArray[i] / 255) * canvas.height;
-                
-                const r = barHeight + 25 * (i / bufferLength);
-                const g = 250 * (i / bufferLength);
-                const b = 50;
-
-                ctx.fillStyle = `rgb(${r},${g},${b})`;
-                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-                x += barWidth + 1;
+        // 2. Setup MediaRecorder (Accurate Mean Calculation)
+        audioChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
             }
         };
 
-        draw();
+        mediaRecorder.onstop = async () => {
+            await processAudioBlob();
+            stopAudioContext();
+        };
+
+        mediaRecorder.start();
+
+        // Auto-stop after 5 seconds to calculate mean
+        setTimeout(() => {
+            if (isRecording) {
+                stopMeter();
+            }
+        }, RECORDING_DURATION);
     }
 
-    async processRecording() {
-        try {
-            // Create audio blob
-            const audioBlob = new Blob(this.recordedChunks, { type: 'audio/wav' });
-            
-            // Convert to array buffer for analysis
-            const arrayBuffer = await audioBlob.arrayBuffer();
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            
-            // Calculate dB level
-            const channelData = audioBuffer.getChannelData(0);
-            const rms = this.calculateRMS(channelData);
-            const dbLevel = this.rmsToDb(rms);
-            
-            // Display results
-            this.displayDbLevel(dbLevel);
-            this.recordingStatus.textContent = 'Recording complete!';
-            this.checkFormValidity();
-
-        } catch (error) {
-            console.error('Error processing recording:', error);
-            this.recordingStatus.textContent = 'Error processing audio. Please try again.';
+    function stopMeter() {
+        if (!isRecording) return;
+        isRecording = false;
+        recordBtn.classList.remove('recording');
+        
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
         }
     }
 
-    calculateRMS(channelData) {
+    function stopAudioContext() {
+        if (javascriptNode) javascriptNode.disconnect();
+        if (microphone) microphone.disconnect();
+        if (analyser) analyser.disconnect();
+        if (audioContext) audioContext.close();
+    }
+
+    // --- The restored algorithm from your previous version ---
+    async function processAudioBlob() {
+        if(dbLevel) dbLevel.innerText = "Processing...";
+        
+        try {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const arrayBuffer = await audioBlob.arrayBuffer();
+            
+            // We need a new temporary context to decode the whole buffer
+            const tempContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioBuffer = await tempContext.decodeAudioData(arrayBuffer);
+            
+            const channelData = audioBuffer.getChannelData(0);
+            const rms = calculateRMS(channelData);
+            const db = rmsToDb(rms);
+            
+            measuredDb = Math.round(db);
+            
+            if(dbValue) dbValue.innerText = measuredDb;
+            updateDbColor(measuredDb);
+            checkFormValidity();
+            
+        } catch (e) {
+            console.error("Error processing audio:", e);
+            if(dbLevel) dbLevel.innerText = "Error";
+        }
+    }
+
+    function calculateRMS(channelData) {
         let sum = 0;
         for (let i = 0; i < channelData.length; i++) {
             sum += channelData[i] * channelData[i];
@@ -525,153 +184,135 @@ class NoiseReporter {
         return Math.sqrt(sum / channelData.length);
     }
 
-    rmsToDb(rms) {
-        // Microphone signals are typically small floating values (<1) which
-        // produce negative dBFS values. To map these into a consumer-friendly
-        // positive dB-like scale we apply a calibration offset. The offset
-        // may need tuning per device; default is chosen to map typical
-        // mobile microphone RMS values into the 30-100 dB range.
-        if (rms === 0) return -Infinity;
-
+    function rmsToDb(rms) {
+        if (rms === 0) return 0;
+        
+        // Standard formula: 20 * log10(RMS)
         const rawDb = 20 * Math.log10(rms);
-
-    // Calibration settings - tweak these if recordings look too low/high.
-    // A higher offset will raise measured values; devices with very low
-    // sensitivity may need larger offsets. Lowered slightly from 120 -> 115
-    // to avoid systematic overestimation.
-    const CALIBRATION_OFFSET = 115; // default offset in dB
-        const calibrated = rawDb + CALIBRATION_OFFSET;
-
-        // Clamp to a reasonable range and return a numeric value.
-        const clamped = Math.max(-100, Math.min(200, calibrated));
-        return clamped;
+        
+        // RESTORED CALIBRATION OFFSET
+        // 115dB is the offset used in your previous stable version
+        const CALIBRATION_OFFSET = 115; 
+        
+        let calibrated = rawDb + CALIBRATION_OFFSET;
+        
+        // Clamp to realistic bounds (0 - 160dB)
+        return Math.max(0, Math.min(160, calibrated));
     }
 
-    displayDbLevel(dbLevel) {
-        const roundedDb = Math.round(dbLevel);
-        this.dbValue.textContent = roundedDb;
-        this.dbDisplay.style.display = 'block';
+    function updateDbColor(db) {
+        if (!dbLevel) return;
+        
+        let text = "";
+        let color = "";
 
-        // Color code based on noise level
-        // New ranges: <=50 Quiet, 51-80 Normal, 81-100 Loud, >100 Very Loud
-        let level = 'Quiet';
-        let color = '#4CAF50'; // Green
-
-        if (roundedDb > 100) {
-            level = 'Very Loud';
-            color = '#B71C1C'; // Darker red
-        } else if (roundedDb > 80) {
-            level = 'Loud';
-            color = '#F44336'; // Red
-        } else if (roundedDb > 50) {
-            level = 'Normal';
-            color = '#8BC34A'; // Light Green
+        if (db < 50) {
+            text = "Quiet / Qetë";
+            color = "#4CAF50";
+        } else if (db < 80) {
+            text = "Moderate / Mesatare";
+            color = "#FFC107";
+        } else {
+            text = "High / E Lartë!";
+            color = "#F44336";
         }
-
-        this.dbLevel.textContent = level;
-        this.dbLevel.style.color = color;
-        this.dbValue.style.color = color;
+        
+        dbLevel.innerText = `${text} (Done)`;
+        dbLevel.style.color = color;
     }
 
-    updateCharCount() {
-        const count = this.description.value.length;
-        this.charCount.textContent = count;
-        this.checkFormValidity();
+    function drawVisualizer(dataArray) {
+        if (!canvas) return;
+        const canvasCtx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+
+        canvasCtx.clearRect(0, 0, width, height);
+        canvasCtx.fillStyle = '#000';
+        canvasCtx.fillRect(0, 0, width, height);
+
+        const barWidth = (width / dataArray.length) * 2.5;
+        let barHeight;
+        let x = 0;
+
+        for(let i = 0; i < dataArray.length; i++) {
+            barHeight = (dataArray[i] / 255) * height;
+            const r = barHeight + (25 * (i/dataArray.length));
+            const g = 250 * (i/dataArray.length);
+            const b = 50;
+            canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
+            canvasCtx.fillRect(x, height - barHeight, barWidth, barHeight);
+            x += barWidth + 1;
+        }
     }
 
-    checkFormValidity() {
-        const hasLocation = this.currentLocation !== null;
-        const hasDescription = this.description.value.trim().length > 0;
-        const hasRecording = this.dbDisplay.style.display !== 'none';
-
-        // Also ensure location is within Tirana bounds
-        const within = this.withinBounds === undefined ? false : this.withinBounds;
-        this.submitBtn.disabled = !(hasLocation && hasDescription && hasRecording && within);
+    // --- 3. Form Validation ---
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', () => {
+            if (charCount) charCount.innerText = descriptionInput.value.length;
+            checkFormValidity();
+        });
     }
 
-    async submitReport(event) {
-        event.preventDefault();
+    function checkFormValidity() {
+        if (!submitReportBtn) return;
 
-        if (!this.currentLocation) {
-            alert('Please get your location first.');
-            return;
+        const isLocationValid = latitude !== null && longitude !== null;
+        const isAudioValid = measuredDb > 0 && !isRecording; 
+        const isTextValid = descriptionInput && descriptionInput.value.trim().length > 0;
+
+        if (isLocationValid && isAudioValid && isTextValid) {
+            submitReportBtn.disabled = false;
+            submitReportBtn.style.opacity = "1";
+            submitReportBtn.style.cursor = "pointer";
+        } else {
+            submitReportBtn.disabled = true;
+            submitReportBtn.style.opacity = "0.5";
+            submitReportBtn.style.cursor = "not-allowed";
         }
+    }
 
-        if (!this.description.value.trim()) {
-            alert('Please provide a description.');
-            return;
-        }
+    // --- 4. Submission ---
+    if (submitReportBtn) {
+        submitReportBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            submitReportBtn.disabled = true;
+            const originalText = submitReportBtn.innerText;
+            submitReportBtn.innerText = "Sending...";
 
-        const dbLevel = parseInt(this.dbValue.textContent);
-        if (isNaN(dbLevel)) {
-            alert('Please record audio first.');
-            return;
-        }
-
-        this.submitBtn.disabled = true;
-        this.submitBtn.textContent = 'Submitting...';
-
-        try {
-            const reportData = {
-                latitude: this.currentLocation.latitude,
-                longitude: this.currentLocation.longitude,
-                decibels: dbLevel,
-                description: this.description.value.trim(),
-                // Add diagnostic fields so server can store device and accuracy info
-                device_info: (navigator && navigator.userAgent) ? navigator.userAgent : null,
-                source: 'browser',
-                accuracy_meters: (this.currentLocation && typeof this.currentLocation.accuracy === 'number') ? this.currentLocation.accuracy : null,
-                audio_path: null
+            const payload = {
+                latitude: latitude,
+                longitude: longitude,
+                accuracy_meters: accuracy,
+                decibels: measuredDb,
+                description: descriptionInput.value,
+                device_info: navigator.userAgent
             };
 
-            const response = await fetch('/api/reports', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(reportData)
-            });
+            try {
+                const response = await fetch('/api/reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            if (response.ok) {
-                alert('✅ Report submitted successfully! Thank you for helping map noise pollution in Tirana.');
-                this.form.reset();
-                this.resetForm();
-                // Attempt to tell the map page to refresh
-                try {
-                    if (window.opener && !window.opener.closed) {
-                        window.opener.location.reload();
-                    } else if (window.parent && window.parent !== window) {
-                        window.parent.location.reload();
-                    }
-                } catch (e) {
-                    // fallback: nothing
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Success! / Sukses!");
+                    window.location.href = '/map';
+                } else {
+                    alert("Error: " + (result.error || "Failed"));
+                    submitReportBtn.disabled = false;
+                    submitReportBtn.innerText = originalText;
                 }
-            } else {
-                throw new Error('Failed to submit report');
+            } catch (error) {
+                console.error(error);
+                alert("Network Error");
+                submitReportBtn.disabled = false;
+                submitReportBtn.innerText = originalText;
             }
-
-        } catch (error) {
-            console.error('Error submitting report:', error);
-            alert('Failed to submit report. Please try again.');
-        } finally {
-            this.submitBtn.disabled = false;
-            this.submitBtn.textContent = 'Submit';
-        }
+        });
     }
-
-    resetForm() {
-        this.currentLocation = null;
-        if (this.coordinates) this.coordinates.style.display = 'none';
-        this.locationStatus.textContent = 'Click to get your current location';
-        this.getLocationBtn.textContent = '📍 Use current location';
-        this.recordingStatus.textContent = 'Click "Start Recording" to begin audio capture (takes 5 seconds)';
-        this.audioVisualizer.style.display = 'none';
-        this.dbDisplay.style.display = 'none';
-        this.charCount.textContent = '0';
-        this.checkFormValidity();
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    new NoiseReporter();
 });
