@@ -2,77 +2,84 @@
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#003366">
     <title>Raporto Zhurmë - Noisewatch</title>
 </head>
 <body>
     <nav>
-        <a class="logo" href="/" aria-label="Kreu"></a>
-        <div class="nav-links" id="navLinks">
-            <a href="/" class="nav-item">Kreu</a>
-            <a href="/about" class="nav-item">Rreth Nesh</a>
-            <a href="/services" class="nav-item">Shërbimet</a>
-            <a href="/map" class="nav-item">Harta</a>
-            <a href="/report" class="nav-item active">Raporto</a>
-            <div class="nav-controls">
-                <button class="theme-btn" id="themeToggle">
-                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                </button>
-                <a class="lang-icon al-icon active" href="/report"></a>
-                <a class="lang-icon en-icon" href="/report-en"></a>
+        <a href="/" class="logo"></a>
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="/" class="nav-item">Kreu</a>
+                <a href="/about" class="nav-item">Rreth Nesh</a>
+                <a href="/services" class="nav-item">Shërbimet</a>
+                <a href="/map" class="nav-item">Harta</a>
+                <a href="/report" class="nav-item active">Raporto</a>
+            </div>
+            <button class="menu-btn" id="menuToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.02-.398-1.11-.94l-.149-.894c-.07-.424-.383-.764-.78-.929-.397-.165-.853-.142-1.204.107l-.737.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.149-.894z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+        </div>
+        <div class="menu-dropdown" id="menuDropdown">
+            <div class="mobile-links">
+                <a href="/">Kreu</a>
+                <a href="/about">Rreth Nesh</a>
+                <a href="/services">Shërbimet</a>
+                <a href="/map">Harta</a>
+                <a href="/report">Raporto</a>
+                <div style="height:1px; background:var(--border-color); width:100%;"></div>
+            </div>
+            <div class="theme-switcher">
+                <button class="theme-opt-btn" data-theme="light">☀️</button>
+                <button class="theme-opt-btn" data-theme="system">⚙️</button>
+                <button class="theme-opt-btn" data-theme="dark">🌙</button>
+            </div>
+            <div style="height:1px; background:var(--border-color); width:100%;"></div>
+            <div class="lang-options">
+                <a href="/report" class="lang-btn"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/report-en" class="lang-btn" style="opacity:0.5"><div class="lang-flag flag-en"></div> Eng</a>
             </div>
         </div>
-        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
     </nav>
 
     <main class="main-container">
-        <div class="report-card">
+        <div class="report-card" style="width: 100%; max-width: 800px;">
             <h1 class="page-title">Raporto Zhurmë</h1>
-            <p class="page-subtitle">Ndihmoni në krijimin e një harte më të saktë të zhurmës në Tiranë.</p>
+            <p class="page-subtitle" style="text-align:center; margin-bottom:30px; opacity:0.8;">Ndihmoni në krijimin e një harte më të saktë të zhurmës në Tiranë.</p>
 
-            <div class="report-grid">
-                <div class="form-group location-controls">
-                    <label>1. Vendndodhja Juaj</label>
-                    <button type="button" id="locationBtn" class="btn btn-secondary" style="background:#334155; border-color:transparent;">
-                        📍 Gjej Vendndodhjen
-                    </button>
-                    <div id="locationStatus" style="margin-top:10px; font-size:0.9rem;">Shtypni butonin për të marrë koordinatat</div>
-                </div>
-
-                <div class="form-group recording-section">
-                    <label>2. Mat Nivelin e Zhurmës</label>
-                    <button id="recordBtn" class="record-btn" title="Fillo Matjen">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                    </button>
-                    <div class="db-display"><span id="dbValue">--</span> <span style="font-size:1rem">dB</span></div>
-                    <div class="db-label" id="dbLevel">Gati për matje</div>
-                    <canvas id="visualizerCanvas" width="300" height="50" style="width:100%; height:50px; margin-top:15px; border-radius:8px; background:#000;"></canvas>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">3. Përshkrimi i Burimit</label>
-                    <textarea id="description" placeholder="Çfarë po shkakton zhurmën? (psh. Trafik, Ndërtim...)" maxlength="250"></textarea>
-                    <div style="text-align:right; font-size:0.8rem; color:var(--text-light);"><span id="charCount">0</span>/250</div>
-                </div>
-
-                <button id="submitReport" class="submit-btn" disabled>Dërgo Raportin</button>
+            <div class="form-group location-controls">
+                <label>1. Vendndodhja Juaj</label>
+                <button type="button" id="locationBtn" class="btn btn-secondary" style="background:#334155; border-color:transparent; width:100%;">📍 Gjej Vendndodhjen</button>
+                <div id="locationStatus" style="margin-top:10px; font-size:0.9rem;">Shtypni butonin për të marrë koordinatat</div>
+                <div id="locationMap" style="display:none; width: 100%; height: 300px; margin-top: 15px; border-radius: 12px;"></div>
             </div>
+
+            <div class="form-group recording-section">
+                <label>2. Mat Nivelin</label>
+                <button id="recordBtn" class="record-btn" title="Fillo Matjen">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </button>
+                <div id="dbValue" style="font-size:2.5rem; font-weight:800;">--</div>
+                <div id="dbLevel" style="font-size:1rem; text-transform:uppercase;">Gati</div>
+                <canvas id="visualizerCanvas" width="300" height="50" style="width:100%; height:50px; margin-top:15px; border-radius:8px; background:#000;"></canvas>
+            </div>
+
+            <div class="form-group">
+                <label for="description">3. Përshkrimi</label>
+                <textarea id="description" placeholder="Çfarë po shkakton zhurmën? (psh. Trafik, Ndërtim...)" maxlength="250"></textarea>
+                <div style="text-align:right; font-size:0.8rem; opacity:0.7;"><span id="charCount">0</span>/250</div>
+            </div>
+
+            <button id="submitReport" class="submit-btn" disabled>Dërgo Raportin</button>
         </div>
     </main>
 
-    <script>
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
-    </script>
+    <script>document.getElementById('menuToggle').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('menuDropdown').classList.toggle('open'); }); document.addEventListener('click', (e) => { if (!document.getElementById('menuToggle').contains(e.target) && !document.getElementById('menuDropdown').contains(e.target)) document.getElementById('menuDropdown').classList.remove('open'); });</script>
     <script src="/js/theme-switch.js"></script>
     <script src="/js/pwa-init.js"></script>
+    <script src="/js/map-loader.js"></script>
     <script src="/js/report-logic.js"></script>
 </body>
 </html>

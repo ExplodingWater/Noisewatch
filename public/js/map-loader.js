@@ -1,20 +1,31 @@
-// Loads Google Maps using the server-provided API key, then calls initMap (global)
 (async function() {
-  try {
-    const resp = await fetch('/api/maps-key');
-    if (!resp.ok) throw new Error('Failed to fetch maps key');
-    const data = await resp.json();
-  const key = data.key || '';
-  // expose optional Map ID to the global so initMap can use it when creating the map
-  try { window.__NW_MAP_ID = data.mapId || ''; } catch (e) { /* ignore in non-browser context */ }
-  const script = document.createElement('script');
-  // Load geometry + marker libraries and request the async loading flag so the
-  // Maps JS warns go away. We still set async/defer on the element.
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=geometry,marker&callback=initMap&loading=async`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  } catch (e) {
-    console.error('Could not load Google Maps API:', e);
-  }
+    try {
+        // 1. Fetch the API key from your backend
+        const response = await fetch('/api/maps-key');
+        if (!response.ok) throw new Error('Failed to fetch Maps API key');
+        
+        const data = await response.json();
+        const apiKey = data.key;
+        const mapId = data.mapId || '';
+
+        if (!apiKey) {
+            console.error("No Google Maps API key found in server response.");
+            return;
+        }
+
+        // 2. Store mapId globally for maplogic.js to use
+        window.__NW_MAP_ID = mapId;
+
+        // 3. Create the script tag
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=visualization,marker`;
+        script.async = true;
+        script.defer = true;
+        
+        // 4. Append to body
+        document.body.appendChild(script);
+
+    } catch (err) {
+        console.error("Error loading Google Maps:", err);
+    }
 })();

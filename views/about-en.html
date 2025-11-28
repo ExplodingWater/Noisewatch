@@ -9,8 +9,7 @@
 </head>
 <body>
     <nav>
-        <a href="/en" class="logo" aria-label="Home"></a>
-        
+        <a href="/en" class="logo"></a>
         <div class="nav-right">
             <div class="nav-links">
                 <a href="/en" class="nav-item">Home</a>
@@ -19,12 +18,10 @@
                 <a href="/map-en" class="nav-item">Map</a>
                 <a href="/report-en" class="nav-item">Report</a>
             </div>
-
-            <button class="menu-btn" id="menuToggle" aria-label="Menu">
-                <span></span><span></span><span></span>
+            <button class="menu-btn" id="menuToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.02-.398-1.11-.94l-.149-.894c-.07-.424-.383-.764-.78-.929-.397-.165-.853-.142-1.204.107l-.737.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.149-.894z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
         </div>
-
         <div class="menu-dropdown" id="menuDropdown">
             <div class="mobile-links">
                 <a href="/en">Home</a>
@@ -32,31 +29,16 @@
                 <a href="/services-en">Services</a>
                 <a href="/map-en">Map</a>
                 <a href="/report-en">Report</a>
-                <div class="menu-divider"></div>
+                <div style="height:1px; background:var(--border-color); width:100%;"></div>
             </div>
-
             <div class="theme-switcher">
-                <button class="theme-opt-btn" data-theme="light" aria-label="Light Mode">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </button>
-                <button class="theme-opt-btn" data-theme="system" aria-label="System Default">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-                    </svg>
-                </button>
-                <button class="theme-opt-btn" data-theme="dark" aria-label="Dark Mode">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                    </svg>
-                </button>
+                <button class="theme-opt-btn" data-theme="light">☀️</button>
+                <button class="theme-opt-btn" data-theme="system">⚙️</button>
+                <button class="theme-opt-btn" data-theme="dark">🌙</button>
             </div>
-
-            <div class="menu-divider"></div>
-
+            <div style="height:1px; background:var(--border-color); width:100%;"></div>
             <div class="lang-options">
-                <a href="/about" class="lang-btn" style="opacity:0.6"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/about" class="lang-btn" style="opacity:0.5"><div class="lang-flag flag-al"></div> Shqip</a>
                 <a href="/about-en" class="lang-btn"><div class="lang-flag flag-en"></div> Eng</a>
             </div>
         </div>
@@ -66,19 +48,13 @@
         <div class="content-wrapper">
             <h1 class="page-title">About Noisewatch</h1>
             <div class="divider"></div>
-            
-            <div class="section-text">
-                <p style="margin-bottom:30px;">
-                    We are a group of professionals, activists, and engaged citizens who believe that every voice matters—and every noise has an impact. 
-                    Noisewatch was created as a modern platform combining technology and civic awareness for a common goal: 
-                    a quieter, healthier, and more livable city.
-                </p>
-                
-                <h3 style="font-size:1.5rem; margin-bottom:15px; color:var(--accent);">Our Mission</h3>
-                <p>
-                    Our inspiration comes from the daily reality of Tirana—a city in constant development, but also facing the often-neglected challenge of noise pollution. 
-                    Our team works to provide reliable data, inform the public, and encourage active community participation in identifying 
-                    and solving urban noise problems.
+            <p class="section-text" style="margin-bottom:30px;">
+                We are a group of professionals, activists, and engaged citizens who believe that every voice matters. Noisewatch is created as a modern platform combining technology and civic awareness for a common goal: a quieter, healthier, and more livable city.
+            </p>
+            <div class="report-card">
+                <h3 style="margin-bottom:15px; color:var(--primary);">Our Mission</h3>
+                <p style="color:var(--text-muted);">
+                    Our inspiration comes from the daily reality of Tirana. Our team works to provide reliable data, inform the public, and encourage active community participation.
                 </p>
             </div>
         </div>
@@ -86,25 +62,12 @@
 
     <footer>
         <div class="partner-logos">
-            <img src="/images/ALBICT logo.png" alt="ALBICT">
-            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
-            <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
+            <img src="/images/ALBICT logo.png"><img src="/images/Bashkia Tirane.png"><img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png">
         </div>
-        <p style="font-size: 0.8rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+        <p style="font-size:0.8rem; opacity:0.6">© 2025 Noisewatch Tirana</p>
     </footer>
 
-    <script>
-        const menuBtn = document.getElementById('menuToggle');
-        const menuDropdown = document.getElementById('menuDropdown');
-        menuBtn.addEventListener('click', () => {
-            menuDropdown.classList.toggle('open');
-        });
-        document.addEventListener('click', (e) => {
-            if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
-                menuDropdown.classList.remove('open');
-            }
-        });
-    </script>
+    <script>document.getElementById('menuToggle').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('menuDropdown').classList.toggle('open'); }); document.addEventListener('click', (e) => { if (!document.getElementById('menuToggle').contains(e.target) && !document.getElementById('menuDropdown').contains(e.target)) document.getElementById('menuDropdown').classList.remove('open'); });</script>
     <script src="/js/theme-switch.js"></script>
     <script src="/js/pwa-init.js"></script>
 </body>

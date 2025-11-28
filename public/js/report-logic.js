@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Report logic loaded");
-
-    // DOM Elements
     const locationBtn = document.getElementById('locationBtn');
     const locationStatus = document.getElementById('locationStatus');
+    const locationMapDiv = document.getElementById('locationMap');
     const recordBtn = document.getElementById('recordBtn');
     const dbValue = document.getElementById('dbValue');
     const dbLevel = document.getElementById('dbLevel');
@@ -12,28 +10,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitReportBtn = document.getElementById('submitReport');
     const canvas = document.getElementById('visualizerCanvas');
     
-    // State variables
+    // Approximate Tirana Bounds
+    const TIRANA_BOUNDS = { MIN_LAT: 41.25, MAX_LAT: 41.40, MIN_LNG: 19.75, MAX_LNG: 19.90 };
+
     let latitude = null;
     let longitude = null;
     let accuracy = null;
     let measuredDb = 0;
     let isRecording = false;
+    let isInsideTirana = false;
     
-    // Audio variables
-    let audioContext = null;
-    let analyser = null;
-    let microphone = null;
-    let javascriptNode = null;
-    let mediaRecorder = null;
+    // Audio globals
+    let audioContext, analyser, microphone, javascriptNode, mediaRecorder;
     let audioChunks = [];
-    const RECORDING_DURATION = 5000; // 5 seconds
 
-    // --- 1. Location Logic ---
+    // --- 1. Location ---
     if (locationBtn) {
         locationBtn.addEventListener('click', (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             locationBtn.disabled = true;
-            locationStatus.innerText = "Duke kërkuar... / Locating...";
+            locationStatus.innerHTML = "Locating...";
 
             if (!navigator.geolocation) {
                 locationStatus.innerText = "Geolocation not supported";
@@ -46,36 +42,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     longitude = position.coords.longitude;
                     accuracy = position.coords.accuracy;
 
-                    locationStatus.innerHTML = `✅ <strong>Lat:</strong> ${latitude.toFixed(4)}, <strong>Lng:</strong> ${longitude.toFixed(4)}`;
-                    locationBtn.style.backgroundColor = "#4CAF50";
-                    locationBtn.style.color = "white";
-                    locationBtn.innerText = "✅ OK";
+                    // Geofence Check
+                    isInsideTirana = (
+                        latitude >= TIRANA_BOUNDS.MIN_LAT && 
+                        latitude <= TIRANA_BOUNDS.MAX_LAT &&
+                        longitude >= TIRANA_BOUNDS.MIN_LNG && 
+                        longitude <= TIRANA_BOUNDS.MAX_LNG
+                    );
+
+                    if (isInsideTirana) {
+                        locationStatus.innerHTML = `<span style="color:green; font-weight:bold;">✅ Location Verified</span>`;
+                        locationBtn.innerText = "✅ Update";
+                        locationBtn.style.background = "#4CAF50";
+                    } else {
+                        locationStatus.innerHTML = `<span style="color:#E53935; font-weight:bold;">❌ Outside Service Area</span><br><small style="color:#E53935">You must be in Tirana to report.</small>`;
+                        locationBtn.innerText = "❌ Outside Area";
+                        locationBtn.style.background = "#E53935";
+                    }
+
+                    renderMap(latitude, longitude);
                     checkFormValidity();
                 },
                 (error) => {
-                    console.error("Error getting location:", error);
+                    console.error(error);
                     locationStatus.innerText = "Error (Check Permissions)";
                     locationBtn.disabled = false;
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                { enableHighAccuracy: true }
             );
         });
     }
 
-    // --- 2. Audio Recording Logic ---
+    async function renderMap(lat, lng) {
+        if (!locationMapDiv) return;
+        locationMapDiv.style.display = 'block';
+        if (typeof google !== 'undefined' && google.maps) {
+            const center = { lat, lng };
+            const map = new google.maps.Map(locationMapDiv, {
+                center: center, zoom: 15, disableDefaultUI: true, mapTypeId: 'roadmap'
+            });
+            new google.maps.Marker({ position: center, map: map });
+        }
+    }
+
+    // --- 2. Audio ---
     if (recordBtn) {
         recordBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             if (!isRecording) {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     startMeter(stream);
-                } catch (err) {
-                    console.error(err);
-                    alert("Microphone access is required to measure noise.");
-                }
+                } catch(err) { alert("Microphone needed."); }
             } else {
-                // Allow manual stop, though it auto-stops after 5s usually
                 stopMeter();
             }
         });
@@ -83,235 +102,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startMeter(stream) {
         isRecording = true;
-        recordBtn.classList.add('recording'); 
+        recordBtn.classList.add('recording');
         if(dbLevel) dbLevel.innerText = "Recording (5s)...";
         
-        // 1. Setup Visualizer (Instant feedback)
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
         microphone = audioContext.createMediaStreamSource(stream);
         javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-
-        analyser.smoothingTimeConstant = 0.8;
-        analyser.fftSize = 1024;
-
+        
         microphone.connect(analyser);
         analyser.connect(javascriptNode);
         javascriptNode.connect(audioContext.destination);
 
-        javascriptNode.onaudioprocess = function() {
+        javascriptNode.onaudioprocess = () => {
             const array = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(array);
-            // Just draw the visualizer, don't calculate final dB here
             drawVisualizer(array);
         };
 
-        // 2. Setup MediaRecorder (Accurate Mean Calculation)
-        audioChunks = [];
         mediaRecorder = new MediaRecorder(stream);
-        
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
-            }
-        };
-
-        mediaRecorder.onstop = async () => {
-            await processAudioBlob();
-            stopAudioContext();
-        };
-
+        audioChunks = [];
+        mediaRecorder.ondataavailable = (e) => { if(e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = processAudioBlob;
         mediaRecorder.start();
 
-        // Auto-stop after 5 seconds to calculate mean
-        setTimeout(() => {
-            if (isRecording) {
-                stopMeter();
-            }
-        }, RECORDING_DURATION);
+        setTimeout(() => { if(isRecording) stopMeter(); }, 5000);
     }
 
     function stopMeter() {
-        if (!isRecording) return;
         isRecording = false;
         recordBtn.classList.remove('recording');
-        
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-        }
+        if(mediaRecorder) mediaRecorder.stop();
+        if(audioContext) audioContext.close();
     }
 
-    function stopAudioContext() {
-        if (javascriptNode) javascriptNode.disconnect();
-        if (microphone) microphone.disconnect();
-        if (analyser) analyser.disconnect();
-        if (audioContext) audioContext.close();
-    }
-
-    // --- The restored algorithm from your previous version ---
     async function processAudioBlob() {
         if(dbLevel) dbLevel.innerText = "Processing...";
+        const blob = new Blob(audioChunks, {type:'audio/wav'});
+        const buffer = await blob.arrayBuffer();
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuf = await ctx.decodeAudioData(buffer);
+        const data = audioBuf.getChannelData(0);
         
-        try {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const arrayBuffer = await audioBlob.arrayBuffer();
-            
-            // We need a new temporary context to decode the whole buffer
-            const tempContext = new (window.AudioContext || window.webkitAudioContext)();
-            const audioBuffer = await tempContext.decodeAudioData(arrayBuffer);
-            
-            const channelData = audioBuffer.getChannelData(0);
-            const rms = calculateRMS(channelData);
-            const db = rmsToDb(rms);
-            
-            measuredDb = Math.round(db);
-            
-            if(dbValue) dbValue.innerText = measuredDb;
-            updateDbColor(measuredDb);
-            checkFormValidity();
-            
-        } catch (e) {
-            console.error("Error processing audio:", e);
-            if(dbLevel) dbLevel.innerText = "Error";
-        }
-    }
-
-    function calculateRMS(channelData) {
         let sum = 0;
-        for (let i = 0; i < channelData.length; i++) {
-            sum += channelData[i] * channelData[i];
+        for(let i=0; i<data.length; i++) sum += data[i]*data[i];
+        const rms = Math.sqrt(sum / data.length);
+        const db = rms > 0 ? 20*Math.log10(rms) + 115 : 0;
+        measuredDb = Math.round(db);
+        
+        if(dbValue) dbValue.innerText = measuredDb;
+        if(dbLevel) {
+            dbLevel.innerText = measuredDb > 80 ? "Loud (High)" : "OK";
+            dbLevel.style.color = measuredDb > 80 ? "red" : "green";
         }
-        return Math.sqrt(sum / channelData.length);
+        checkFormValidity();
     }
 
-    function rmsToDb(rms) {
-        if (rms === 0) return 0;
-        
-        // Standard formula: 20 * log10(RMS)
-        const rawDb = 20 * Math.log10(rms);
-        
-        // RESTORED CALIBRATION OFFSET
-        // 115dB is the offset used in your previous stable version
-        const CALIBRATION_OFFSET = 115; 
-        
-        let calibrated = rawDb + CALIBRATION_OFFSET;
-        
-        // Clamp to realistic bounds (0 - 160dB)
-        return Math.max(0, Math.min(160, calibrated));
-    }
-
-    function updateDbColor(db) {
-        if (!dbLevel) return;
-        
-        let text = "";
-        let color = "";
-
-        if (db < 50) {
-            text = "Quiet / Qetë";
-            color = "#4CAF50";
-        } else if (db < 80) {
-            text = "Moderate / Mesatare";
-            color = "#FFC107";
-        } else {
-            text = "High / E Lartë!";
-            color = "#F44336";
-        }
-        
-        dbLevel.innerText = `${text} (Done)`;
-        dbLevel.style.color = color;
-    }
-
-    function drawVisualizer(dataArray) {
-        if (!canvas) return;
-        const canvasCtx = canvas.getContext("2d");
-        const width = canvas.width;
-        const height = canvas.height;
-
-        canvasCtx.clearRect(0, 0, width, height);
-        canvasCtx.fillStyle = '#000';
-        canvasCtx.fillRect(0, 0, width, height);
-
-        const barWidth = (width / dataArray.length) * 2.5;
-        let barHeight;
+    function drawVisualizer(data) {
+        if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const w = canvas.width / data.length * 2.5;
         let x = 0;
-
-        for(let i = 0; i < dataArray.length; i++) {
-            barHeight = (dataArray[i] / 255) * height;
-            const r = barHeight + (25 * (i/dataArray.length));
-            const g = 250 * (i/dataArray.length);
-            const b = 50;
-            canvasCtx.fillStyle = `rgb(${r},${g},${b})`;
-            canvasCtx.fillRect(x, height - barHeight, barWidth, barHeight);
-            x += barWidth + 1;
+        for(let i=0; i<data.length; i++) {
+            const h = (data[i]/255)*canvas.height;
+            ctx.fillStyle = `rgb(${h+50},250,50)`;
+            ctx.fillRect(x, canvas.height-h, w, h);
+            x += w+1;
         }
     }
 
-    // --- 3. Form Validation ---
+    // --- 3. Validation ---
     if (descriptionInput) {
         descriptionInput.addEventListener('input', () => {
-            if (charCount) charCount.innerText = descriptionInput.value.length;
+            if(charCount) charCount.innerText = descriptionInput.value.length;
             checkFormValidity();
         });
     }
 
     function checkFormValidity() {
         if (!submitReportBtn) return;
+        
+        const hasLocation = latitude !== null && isInsideTirana;
+        const hasAudio = measuredDb > 0 && !isRecording;
+        const hasText = descriptionInput.value.trim().length > 0;
 
-        const isLocationValid = latitude !== null && longitude !== null;
-        const isAudioValid = measuredDb > 0 && !isRecording; 
-        const isTextValid = descriptionInput && descriptionInput.value.trim().length > 0;
-
-        if (isLocationValid && isAudioValid && isTextValid) {
+        if (hasLocation && hasAudio && hasText) {
             submitReportBtn.disabled = false;
             submitReportBtn.style.opacity = "1";
             submitReportBtn.style.cursor = "pointer";
+            submitReportBtn.innerText = "Submit Report";
         } else {
             submitReportBtn.disabled = true;
             submitReportBtn.style.opacity = "0.5";
             submitReportBtn.style.cursor = "not-allowed";
+            if (latitude !== null && !isInsideTirana) {
+                submitReportBtn.innerText = "Cannot submit outside Tirana";
+            } else {
+                submitReportBtn.innerText = "Complete all steps";
+            }
         }
     }
 
-    // --- 4. Submission ---
+    // --- 4. Submit ---
     if (submitReportBtn) {
         submitReportBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            
             submitReportBtn.disabled = true;
-            const originalText = submitReportBtn.innerText;
             submitReportBtn.innerText = "Sending...";
 
-            const payload = {
-                latitude: latitude,
-                longitude: longitude,
-                accuracy_meters: accuracy,
-                decibels: measuredDb,
-                description: descriptionInput.value,
-                device_info: navigator.userAgent
-            };
-
             try {
-                const response = await fetch('/api/reports', {
+                const res = await fetch('/api/reports', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        latitude, longitude, accuracy_meters: accuracy,
+                        decibels: measuredDb, description: descriptionInput.value,
+                        device_info: navigator.userAgent
+                    })
                 });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert("Success! / Sukses!");
+                if(res.ok) {
+                    alert("Success!");
                     window.location.href = '/map';
                 } else {
-                    alert("Error: " + (result.error || "Failed"));
+                    alert("Error submitting");
                     submitReportBtn.disabled = false;
-                    submitReportBtn.innerText = originalText;
                 }
-            } catch (error) {
-                console.error(error);
-                alert("Network Error");
+            } catch(e) {
+                alert("Network error");
                 submitReportBtn.disabled = false;
-                submitReportBtn.innerText = originalText;
             }
         });
     }

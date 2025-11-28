@@ -2,88 +2,77 @@
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#003366">
     <title>Noisewatch Tirana</title>
 </head>
-<body>
+<body class="home-page">
     <nav>
-        <a class="logo" href="/" aria-label="Kreu"></a>
-        
-        <div class="nav-links" id="navLinks">
-            <a href="/" class="nav-item active">Kreu</a>
-            <a href="/about" class="nav-item">Rreth Nesh</a>
-            <a href="/services" class="nav-item">Shërbimet</a>
-            <a href="/map" class="nav-item">Harta</a>
-            <a href="/report" class="nav-item">Raporto</a>
-            
-            <div class="nav-controls">
-                <button class="theme-btn" id="themeToggle" aria-label="Toggle Dark Mode">
-                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                </button>
-                <a class="lang-icon al-icon active" href="/" title="Shqip"></a>
-                <a class="lang-icon en-icon" href="/en" title="English"></a>
+        <a href="/" class="logo" aria-label="Kreu"></a>
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="/" class="nav-item active">Kreu</a>
+                <a href="/about" class="nav-item">Rreth Nesh</a>
+                <a href="/services" class="nav-item">Shërbimet</a>
+                <a href="/map" class="nav-item">Harta</a>
+                <a href="/report" class="nav-item">Raporto</a>
+            </div>
+            <button class="menu-btn" id="menuToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.02-.398-1.11-.94l-.149-.894c-.07-.424-.383-.764-.78-.929-.397-.165-.853-.142-1.204.107l-.737.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.149-.894z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
+        </div>
+        <div class="menu-dropdown" id="menuDropdown">
+            <div class="mobile-links">
+                <a href="/">Kreu</a>
+                <a href="/about">Rreth Nesh</a>
+                <a href="/services">Shërbimet</a>
+                <a href="/map">Harta</a>
+                <a href="/report">Raporto</a>
+                <div style="height:1px; background:var(--border-color); width:100%;"></div>
+            </div>
+            <div class="theme-switcher">
+                <button class="theme-opt-btn" data-theme="light">☀️</button>
+                <button class="theme-opt-btn" data-theme="system">⚙️</button>
+                <button class="theme-opt-btn" data-theme="dark">🌙</button>
+            </div>
+            <div style="height:1px; background:var(--border-color); width:100%;"></div>
+            <div class="lang-options">
+                <a href="/" class="lang-btn"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/en" class="lang-btn" style="opacity:0.5"><div class="lang-flag flag-en"></div> Eng</a>
             </div>
         </div>
-
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
     </nav>
 
     <header class="hero">
         <h1>Zëri i qytetit<br>dëgjohet ndryshe.</h1>
-        <p>
-            Tirana është plot jetë, por zhurma po na prek shëndetin.
-            Noisewatch është platforma ku ju informoheni, kontribuoni dhe ndihmoni
-            për një qytet më të qetë.
-        </p>
+        <p>Tirana është plot jetë, por zhurma po na prek shëndetin. Noisewatch është platforma ku ju informoheni, kontribuoni dhe ndihmoni për një qytet më të qetë.</p>
         <div class="hero-buttons">
             <a href="/map" class="btn btn-primary">Shiko Hartën</a>
             <a href="/report" class="btn btn-secondary">Raporto Zhurmë</a>
         </div>
     </header>
 
-    <section id="about" class="main-container" style="margin-top:0; min-height:auto;">
+    <section class="main-container" style="margin-top: 0; padding-top: 100px; padding-bottom: 100px;">
         <h2 class="page-title">Rreth Nesh</h2>
-        <div style="text-align:center; max-width:800px; margin:0 auto; font-size:1.15rem; opacity:0.9;">
-            <p>
-                Ne jemi një grup profesionistësh dhe qytetarësh që besojmë se çdo zë ka rëndësi.
-                Noisewatch sjell teknologjinë dhe ndërgjegjësimin qytetar së bashku për një
-                Tiranë më të qetë dhe të jetueshme.
-            </p>
-        </div>
+        <div class="divider"></div>
+        <p class="section-text">
+            Ne jemi një grup profesionistësh dhe qytetarësh që besojmë se çdo zë ka rëndësi. 
+            Noisewatch sjell teknologjinë dhe ndërgjegjësimin qytetar së bashku për një Tiranë më të qetë.<br><br>
+            Misioni ynë është të ofrojmë të dhëna transparente për ndotjen akustike, duke fuqizuar çdo banor të Tiranës të bëhet pjesë e zgjidhjes.
+        </p>
     </section>
 
     <footer>
-        <h2 style="margin-bottom:30px; opacity:0.9;">Bashkëpunëtorët</h2>
-        <div class="footer-logos">
-            <img src="/images/ALBICT logo.png" alt="ALBICT">
-            <img src="/images/Bashkia Tirane.png" alt="Bashkia Tirane">
+        <div class="partner-logos">
+            <img src="/images/ALBICT%20logo.png" alt="ALBICT">
+            <img src="/images/Bashkia%20Tirane.png" alt="Bashkia Tirane">
             <img src="/images/BP_Youth_Climate_Action_Fund_Logo_Options_040824_V1_FNL_YCAF-Logo-with-Tagline-as-Outlined-Text-White.png" alt="Climate Fund">
         </div>
-        <p style="margin-top:40px; font-size: 0.9rem; opacity: 0.6;">© 2025 Noisewatch Tirana</p>
+        <p style="font-size:0.8rem; opacity:0.6">© 2025 Noisewatch Tirana</p>
     </footer>
-
-    <script>
-        // Mobile Menu Logic
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
-        navLinks.querySelectorAll('a.nav-item').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
-        });
-    </script>
+    
+    <script>document.getElementById('menuToggle').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('menuDropdown').classList.toggle('open'); }); document.addEventListener('click', (e) => { if (!document.getElementById('menuToggle').contains(e.target) && !document.getElementById('menuDropdown').contains(e.target)) document.getElementById('menuDropdown').classList.remove('open'); });</script>
     <script src="/js/theme-switch.js"></script>
     <script src="/js/pwa-init.js"></script>
 </body>
