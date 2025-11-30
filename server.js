@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // PostgreSQL pool connection
 const pool = new Pool({
@@ -24,14 +24,30 @@ pool.connect()
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
 
-// Serve static pages
-const serve = (p) => (req, res) => res.sendFile(path.join(__dirname, p));
-app.get('/', serve('index.html'));
-app.get('/map', serve('map.html'));
-app.get(['/about', '/services'], serve('index.html'));
-app.get(['/report', '/report/'], serve('report.html'));
+// Serve static files from 'public' directory (CSS, JS, Images)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Helper to serve HTML files from 'views' directory
+const serveView = (filename) => (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', filename));
+};
+
+// Routes
+app.get('/', serveView('index.html'));
+app.get('/en', serveView('en.html')); // English Home
+
+app.get('/about', serveView('about.html'));
+app.get('/about-en', serveView('about-en.html'));
+
+app.get('/services', serveView('services.html'));
+app.get('/services-en', serveView('services-en.html'));
+
+app.get('/map', serveView('map.html'));
+app.get('/map-en', serveView('map-en.html'));
+
+app.get('/report', serveView('report.html'));
+app.get('/report-en', serveView('report-en.html'));
 
 // Import API routes and inject pool
 const apiRouter = require('./routes/api');
@@ -43,5 +59,4 @@ app.use('/api', (req, res, next) => {
 app.listen(port, () => {
   console.log(`🚀 Noisewatch server running on port ${port}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 Access the app at: http://localhost:${port}`);
 });
