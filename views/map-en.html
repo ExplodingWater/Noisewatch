@@ -18,19 +18,12 @@
                 <a href="/map-en" class="nav-item active">Map</a>
                 <a href="/report-en" class="nav-item">Report</a>
             </div>
-            <button class="menu-btn" id="menuToggle">
+            <button class="desktop-settings-btn" id="desktopMenuToggle">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.02-.398-1.11-.94l-.149-.894c-.07-.424-.383-.764-.78-.929-.397-.165-.853-.142-1.204.107l-.737.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.149-.894z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
+            <button class="mobile-menu-btn" id="mobileMenuToggle"><span></span><span></span><span></span></button>
         </div>
-        <div class="menu-dropdown" id="menuDropdown">
-            <div class="mobile-links">
-                <a href="/en">Home</a>
-                <a href="/about-en">About Us</a>
-                <a href="/services-en">Services</a>
-                <a href="/map-en">Map</a>
-                <a href="/report-en">Report</a>
-                <div style="height:1px; background:var(--border-color); width:100%;"></div>
-            </div>
+        <div class="menu-dropdown" id="desktopDropdown">
             <div class="theme-switcher">
                 <button class="theme-opt-btn" data-theme="light">☀️</button>
                 <button class="theme-opt-btn" data-theme="system">⚙️</button>
@@ -38,15 +31,36 @@
             </div>
             <div style="height:1px; background:var(--border-color); width:100%;"></div>
             <div class="lang-options">
-                <a href="/map" class="lang-btn" style="opacity:0.5"><div class="lang-flag flag-al"></div> Shqip</a>
+                <a href="/map" class="lang-btn"><div class="lang-flag flag-al"></div> Shqip</a>
                 <a href="/map-en" class="lang-btn"><div class="lang-flag flag-en"></div> Eng</a>
+            </div>
+        </div>
+        <div class="drawer-overlay" id="drawerOverlay"></div>
+        <div class="mobile-drawer" id="mobileDrawer">
+            <div class="mobile-header"><button class="mobile-close-btn" id="mobileMenuClose"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <div class="drawer-links">
+                <a href="/en">Home</a>
+                <a href="/about-en">About Us</a>
+                <a href="/services-en">Services</a>
+                <a href="/map-en">Map</a>
+                <a href="/report-en">Report</a>
+            </div>
+            <div style="margin-top: auto; display:flex; flex-direction:column; gap:20px;">
+                <div class="theme-switcher">
+                    <button class="theme-opt-btn" data-theme="light">☀️</button>
+                    <button class="theme-opt-btn" data-theme="system">⚙️</button>
+                    <button class="theme-opt-btn" data-theme="dark">🌙</button>
+                </div>
+                <div class="lang-options">
+                    <a href="/map" class="lang-btn"><div class="lang-flag flag-al"></div> Shqip</a>
+                    <a href="/map-en" class="lang-btn"><div class="lang-flag flag-en"></div> Eng</a>
+                </div>
             </div>
         </div>
     </nav>
 
     <main class="map-container">
         <div id="googleMap"></div>
-        
         <div id="heatmap-legend">
             <div class="legend-item"><span class="dot-green"></span> <50 dB</div>
             <div class="legend-item"><span class="dot-yellow"></span> 51-80 dB</div>
@@ -66,7 +80,20 @@
         </div>
     </div>
 
-    <script>document.getElementById('menuToggle').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('menuDropdown').classList.toggle('open'); }); document.addEventListener('click', (e) => { if (!document.getElementById('menuToggle').contains(e.target) && !document.getElementById('menuDropdown').contains(e.target)) document.getElementById('menuDropdown').classList.remove('open'); });</script>
+    <script>
+        const mobileBtn = document.getElementById('mobileMenuToggle');
+        const mobileClose = document.getElementById('mobileMenuClose');
+        const drawer = document.getElementById('mobileDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        function toggleDrawer() { drawer.classList.toggle('open'); overlay.classList.toggle('open'); }
+        mobileBtn.addEventListener('click', toggleDrawer);
+        mobileClose.addEventListener('click', toggleDrawer);
+        overlay.addEventListener('click', toggleDrawer);
+        const desktopBtn = document.getElementById('desktopMenuToggle');
+        const desktopDropdown = document.getElementById('desktopDropdown');
+        desktopBtn.addEventListener('click', (e) => { e.stopPropagation(); desktopDropdown.classList.toggle('open'); });
+        document.addEventListener('click', (e) => { if (!desktopBtn.contains(e.target) && !desktopDropdown.contains(e.target)) desktopDropdown.classList.remove('open'); });
+    </script>
     <script src="/js/map-loader.js"></script>
     <script src="/js/maplogic.js"></script>
     <script src="/js/theme-switch.js"></script>
