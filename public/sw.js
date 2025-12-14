@@ -35,6 +35,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
+  // 1. IGNORE non-GET requests (Fixes the POST error)
+  if (event.request.method !== 'GET') return;
+
+  // 2. IGNORE Google Maps API requests (Don't cache the map itself)
+  if (url.hostname.includes('googleapis.com') || url.hostname.includes('gstatic.com')) {
+    return;
+  }
+
   // Network-first for API
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
