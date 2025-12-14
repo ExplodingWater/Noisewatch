@@ -1,6 +1,13 @@
 (async function() {
     try {
-        // 1. Fetch the API key from your backend
+        // 1. Ensure initMap exists to prevent errors on pages like /report
+        if (typeof window.initMap !== 'function') {
+            window.initMap = function() {
+                console.log("Google Maps loaded (no auto-init required for this page).");
+            };
+        }
+
+        // 2. Fetch the API key from your backend
         const response = await fetch('/api/maps-key');
         if (!response.ok) throw new Error('Failed to fetch Maps API key');
         
@@ -13,16 +20,17 @@
             return;
         }
 
-        // 2. Store mapId globally for maplogic.js to use
+        // 3. Store mapId globally
         window.__NW_MAP_ID = mapId;
 
-        // 3. Create the script tag
+        // 4. Create the script tag
+        // Added '&loading=async' for performance and to fix console warnings
         const script = document.createElement('script');
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=visualization,marker&loading=async`;
         script.async = true;
         script.defer = true;
         
-        // 4. Append to body
+        // 5. Append to body
         document.body.appendChild(script);
 
     } catch (err) {
