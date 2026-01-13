@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP Proxy for Node.js Noisewatch Application
- * This file forwards all requests to the Node.js app running on port 3000
+ * This file forwards all requests to the Node.js app running on port 3000.
  */
 
 // Get the full request URI
