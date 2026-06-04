@@ -1,4 +1,4 @@
-(async function() {
+(function() {
     try {
         // 1. Ensure initMap exists to prevent errors on pages like /report
         if (typeof window.initMap !== 'function') {
@@ -7,16 +7,13 @@
             };
         }
 
-        // 2. Fetch the API key from your backend
-        const response = await fetch('/api/maps-key');
-        if (!response.ok) throw new Error('Failed to fetch Maps API key');
-        
-        const data = await response.json();
-        const apiKey = data.key;
-        const mapId = data.mapId || '';
+        // 2. Read API key injected server-side (set by pages router, never a public endpoint)
+        const config = window.__MAPS_CONFIG || {};
+        const apiKey = config.key || '';
+        const mapId = config.mapId || '';
 
         if (!apiKey) {
-            console.error("No Google Maps API key found in server response.");
+            console.error("No Google Maps API key found. Ensure the page is served via the Node.js router.");
             return;
         }
 
@@ -29,7 +26,7 @@
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=visualization,marker&loading=async`;
         script.async = true;
         script.defer = true;
-        
+
         // 5. Append to body
         document.body.appendChild(script);
 

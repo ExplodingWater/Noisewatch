@@ -4,10 +4,29 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+
+// Security: hide Express fingerprint
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+// Security: restrict CORS to own domain only
+const allowedOrigins = [
+  'https://noisewatch.org',
+  'https://www.noisewatch.org'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. server-to-server, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

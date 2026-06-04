@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const tiranaGeo = require('../data/tirana_polygon.json');
 const pool = require('../config/database.js'); // add this line
 
@@ -21,13 +22,10 @@ function pointInPolygon(lat, lng, polygon) {
   return inside;
 }
 
-// Maps API key endpoint
-router.get('/maps-key', (req, res) => {
-  res.json({
-    key: process.env.GOOGLE_MAPS_API_KEY || '',
-    mapId: process.env.GOOGLE_MAPS_MAP_ID || ''
-  });
-});
+// NOTE: /api/maps-key endpoint removed for security.
+// The Google Maps API key must NOT be served via a public API endpoint.
+// Embed it server-side at render time instead (e.g. via a template or
+// injected into the HTML by your pages router).
 
 // GET all reports
 router.get('/reports', async (req, res) => {
@@ -63,6 +61,11 @@ router.post('/reports', async (req, res) => {
       accuracy_meters,
       audio_path
     } = req.body;
+
+    // Sanitize audio_path: only allow safe filenames, no directory traversal
+    const safeAudioPath = audio_path
+      ? path.basename(String(audio_path)).replace(/[^a-zA-Z0-9._-]/g, '')
+      : null;
 
     if (
       latitude == null ||
@@ -119,7 +122,7 @@ router.post('/reports', async (req, res) => {
       device_info || null,
       source || null,
       accuracy_meters ? parseInt(accuracy_meters) : null,
-      audio_path || null,
+      safeAudioPath,
       severity
     ];
 
