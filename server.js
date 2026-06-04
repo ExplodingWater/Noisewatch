@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -52,6 +53,19 @@ const serveView = (filename) => (req, res) => {
     res.sendFile(path.join(__dirname, 'views', filename));
 };
 
+// Helper to serve map/report pages with Maps API key injected server-side
+// (prevents exposing the key via a public API endpoint)
+const serveMapsPage = (filename) => (req, res) => {
+    const filePath = path.join(__dirname, 'views', filename);
+    fs.readFile(filePath, 'utf8', (err, html) => {
+        if (err) return res.status(500).send('Page not found');
+        const injection = `<script>window.__MAPS_CONFIG={key:${JSON.stringify(process.env.GOOGLE_MAPS_API_KEY || '')},mapId:${JSON.stringify(process.env.GOOGLE_MAPS_MAP_ID || '')}};</script>`;
+        const injected = html.replace('</head>', `${injection}</head>`);
+        res.setHeader('Content-Type', 'text/html');
+        res.send(injected);
+    });
+};
+
 // Routes
 app.get('/', serveView('index.html'));
 app.get('/en', serveView('en.html')); // English Home
@@ -62,11 +76,11 @@ app.get('/about-en', serveView('about-en.html'));
 app.get('/services', serveView('services.html'));
 app.get('/services-en', serveView('services-en.html'));
 
-app.get('/map', serveView('map.html'));
-app.get('/map-en', serveView('map-en.html'));
+app.get('/map', serveMapsPage('map.html'));
+app.get('/map-en', serveMapsPage('map-en.html'));
 
-app.get('/report', serveView('report.html'));
-app.get('/report-en', serveView('report-en.html'));
+app.get('/report', serveMapsPage('report.html'));
+app.get('/report-en', serveMapsPage('report-en.html'));
 
 // Import API routes and inject pool
 const apiRouter = require('./routes/api');
