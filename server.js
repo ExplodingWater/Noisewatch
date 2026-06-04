@@ -7,6 +7,9 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Security: hide Express fingerprint
+app.disable('x-powered-by');
+
 // PostgreSQL pool connection
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -22,7 +25,22 @@ pool.connect()
   .catch((err) => console.error('❌ Database connection error:', err.stack));
 
 // Middleware
-app.use(cors());
+// Security: restrict CORS to own domain only
+const allowedOrigins = [
+  'https://noisewatch.org',
+  'https://www.noisewatch.org'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Serve static files from 'public' directory (CSS, JS, Images)
