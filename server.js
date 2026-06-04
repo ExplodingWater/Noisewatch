@@ -16,8 +16,9 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE,
   password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT
-  // No SSL needed — DB runs on localhost
+  port: process.env.DB_PORT,
+  // PostgreSQL on this server requires SSL even for localhost connections
+  ssl: { rejectUnauthorized: false }
 });
 
 pool.connect()
