@@ -1,7 +1,54 @@
+// Global filter state — empty means no filter (show all)
+const activeFilters = new Set();
+
+// Stores { severity, circle, marker } for every cluster so we can show/hide them
+let allOverlays = [];
+let mapRef = null;
+
+// Determine severity bucket from average decibels (matches server logic)
+function getSeverity(avgDb) {
+    if (avgDb <= 50) return 'quiet';
+    if (avgDb <= 80) return 'normal';
+    if (avgDb <= 100) return 'loud';
+    return 'very_high';
+}
+
+// Apply active filters — if nothing selected, show all
+function applyFilters() {
+    allOverlays.forEach(({ severity, circle, marker }) => {
+        const visible = activeFilters.size === 0 || activeFilters.has(severity);
+        circle.setMap(visible ? mapRef : null);
+        marker.setMap(visible ? mapRef : null);
+    });
+}
+
+// Wire up legend filter buttons
+function initFilterButtons() {
+    const legend = document.getElementById('heatmap-legend');
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const severity = btn.dataset.severity;
+            if (activeFilters.has(severity)) {
+                activeFilters.delete(severity);
+                btn.classList.remove('active');
+            } else {
+                activeFilters.add(severity);
+                btn.classList.add('active');
+            }
+            // Toggle container class so CSS knows whether any filter is active
+            legend.classList.toggle('has-active', activeFilters.size > 0);
+            applyFilters();
+        });
+    });
+}
+
+// Wire up filter buttons as soon as DOM is ready (independent of Maps loading)
+document.addEventListener('DOMContentLoaded', initFilterButtons);
+
 // Make initMap global so the Google Maps callback can find it
 window.initMap = function() {
     const tirana = { lat: 41.3275, lng: 19.8187 };
-    
+
     const mapElement = document.getElementById("googleMap");
     if (!mapElement) return;
 
@@ -9,11 +56,13 @@ window.initMap = function() {
         center: tirana,
         zoom: 13,
         mapTypeId: 'satellite',
-        mapId: window.__NW_MAP_ID || undefined, // Uses ID fetched by loader
+        mapId: window.__NW_MAP_ID || undefined,
         disableDefaultUI: false,
         clickableIcons: false,
         streetViewControl: false
     });
+
+    mapRef = map;
 
     fetchReportsAndDrawHeatmap(map);
 
@@ -45,9 +94,9 @@ window.showClusterModal = function(cluster) {
     const modal = document.getElementById('clusterModal');
     const body = document.getElementById('clusterModalBody');
     const close = document.getElementById('clusterModalClose');
-    
+
     if (!modal || !body) return;
-    
+
     body.innerHTML = '';
     cluster.reports.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
@@ -57,15 +106,14 @@ window.showClusterModal = function(cluster) {
         let timeStr = created ? created.toLocaleTimeString('sq-AL', {hour:'2-digit', minute:'2-digit'}) : '';
         const desc = (r.description || '').replace(/</g,'&lt;');
         const db = Math.round(r.decibels || 0);
-        
-        // Color logic for list items
+
         let valColor = '#333';
         if (db > 80) valColor = '#F44336';
         else if (db > 50) valColor = '#FF9800';
         else valColor = '#4CAF50';
 
         const item = document.createElement('div');
-        item.className = 'cluster-item'; // CSS class in style.css
+        item.className = 'cluster-item';
         item.innerHTML = `
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                 <span style="font-weight:bold; color:${valColor};">${db} dB</span>
@@ -77,7 +125,7 @@ window.showClusterModal = function(cluster) {
     });
 
     modal.style.display = 'flex';
-    
+
     if(close) close.onclick = () => { modal.style.display = 'none'; };
     window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 };
@@ -103,8 +151,8 @@ async function fetchReportsAndDrawHeatmap(map) {
             const db = Number(r.decibels);
             if(isNaN(lat) || isNaN(lng)) return;
 
-            let found = clusters.find(c => 
-                Math.abs(lat - c.lat) < clusterDistance && 
+            let found = clusters.find(c =>
+                Math.abs(lat - c.lat) < clusterDistance &&
                 Math.abs(lng - c.lng) < clusterDistance
             );
 
@@ -120,11 +168,15 @@ async function fetchReportsAndDrawHeatmap(map) {
         });
 
         const infoWindow = new google.maps.InfoWindow();
-        
+
+        // Reset stored overlays
+        allOverlays = [];
+
         clusters.forEach(cl => {
             const count = cl.reports.length;
             const avgDb = Math.round(cl.totalDecibels / count);
-            
+            const severity = getSeverity(avgDb);
+
             let color = '#666';
             if(avgDb <= 50) color = '#4caf50';
             else if(avgDb <= 80) color = '#ffc107';
@@ -132,7 +184,7 @@ async function fetchReportsAndDrawHeatmap(map) {
             else color = '#f44336';
 
             // Visual Circle
-            new google.maps.Circle({
+            const circle = new google.maps.Circle({
                 strokeColor: color,
                 strokeOpacity: 0.8,
                 strokeWeight: 2,
@@ -141,27 +193,29 @@ async function fetchReportsAndDrawHeatmap(map) {
                 map,
                 center: { lat: cl.lat, lng: cl.lng },
                 radius: 40 + (count * 5),
-                clickable: false 
+                clickable: false
             });
 
-            // Interaction Marker (Invisible but clickable)
+            // Invisible but clickable marker
             const marker = new google.maps.Marker({
                 position: { lat: cl.lat, lng: cl.lng },
                 map: map,
-                icon: { 
-                    path: google.maps.SymbolPath.CIRCLE, 
-                    scale: 15, 
-                    fillOpacity: 0, 
-                    strokeOpacity: 0 
-                }, 
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 15,
+                    fillOpacity: 0,
+                    strokeOpacity: 0
+                },
                 zIndex: 100,
                 title: `${avgDb} dB`
             });
 
+            // Store for filter toggling
+            allOverlays.push({ severity, circle, marker });
+
             const latest = cl.reports.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
             const timeStr = new Date(latest.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            // Note: Inline styles here for infoWindow content to ensure visibility
             const content = `
                 <div style="padding:5px; color:#111; font-family:sans-serif;">
                     <h3 style="margin:0 0 5px; color:${color}; font-weight:800;">${avgDb} dB</h3>
@@ -179,7 +233,7 @@ async function fetchReportsAndDrawHeatmap(map) {
             marker.addListener('click', () => {
                 infoWindow.setContent(content);
                 infoWindow.open(map, marker);
-                
+
                 setTimeout(() => {
                     const btn = document.getElementById(`btn-${latest.id}`);
                     if(btn) {
@@ -191,6 +245,9 @@ async function fetchReportsAndDrawHeatmap(map) {
                 }, 100);
             });
         });
+
+        // Apply current filter state after drawing
+        applyFilters();
 
     } catch (err) {
         console.warn("Map Data Error:", err);

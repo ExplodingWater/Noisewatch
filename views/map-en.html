@@ -62,10 +62,10 @@
     <main class="map-container">
         <div id="googleMap"></div>
         <div id="heatmap-legend">
-            <div class="legend-item"><span class="dot-green"></span> <50 dB</div>
-            <div class="legend-item"><span class="dot-yellow"></span> 51-80 dB</div>
-            <div class="legend-item"><span class="dot-orange"></span> 81-100 dB</div>
-            <div class="legend-item"><span class="dot-red"></span> >100 dB</div>
+            <div class="legend-item filter-btn" data-severity="quiet"><span class="dot-green"></span> &lt;50 dB</div>
+            <div class="legend-item filter-btn" data-severity="normal"><span class="dot-yellow"></span> 51-80 dB</div>
+            <div class="legend-item filter-btn" data-severity="loud"><span class="dot-orange"></span> 81-100 dB</div>
+            <div class="legend-item filter-btn" data-severity="very_high"><span class="dot-red"></span> &gt;100 dB</div>
         </div>
     </main>
 
